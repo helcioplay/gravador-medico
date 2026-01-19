@@ -112,6 +112,9 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
     // Captura resposta como texto primeiro para debug
     const customerResponseText = await customerResponse.text()
     
+    console.log('📥 Status da resposta:', customerResponse.status)
+    console.log('📥 Corpo da resposta (primeiros 500 chars):', customerResponseText.substring(0, 500))
+    
     if (!customerResponse.ok) {
       console.error('❌ Erro ao criar cliente:', {
         status: customerResponse.status,
@@ -119,12 +122,7 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
         body: customerResponseText.substring(0, 500),
       })
       
-      try {
-        const error = JSON.parse(customerResponseText)
-        throw new Error(error.message || 'Erro ao criar cliente na Appmax')
-      } catch (e) {
-        throw new Error(`Erro ao criar cliente: ${customerResponse.status} - ${customerResponseText.substring(0, 200)}`)
-      }
+      throw new Error(`Erro ao criar cliente na Appmax: ${customerResponse.status} - ${customerResponseText.substring(0, 200)}`)
     }
 
     let customerResult
@@ -293,14 +291,20 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
 
     const paymentResult = await paymentResponse.json()
     
+    console.log('📥 Resposta pagamento:', JSON.stringify(paymentResult).substring(0, 500))
+    
+    // A API Appmax retorna: pix_qrcode, pix_emv, etc
+    const pixQrCode = paymentResult.pix_qrcode || 
+                      paymentResult.pix_qr_code || 
+                      paymentResult.data?.pix_qrcode ||
+                      paymentResult.data?.pix_emv
+    
     return {
-      success: paymentResult.success || true,
+      success: true,
       order_id: orderId.toString(),
-      status: paymentResult.status || 'pending',
-      payment_url: paymentResult.payment_url,
-      pix_qr_code: paymentResult.pix_qr_code,
-      pix_qr_code_base64: paymentResult.pix_qr_code_base64,
-      boleto_url: paymentResult.boleto_url,
+      status: 'pending',
+      pix_qr_code: pixQrCode,
+      pix_qr_code_base64: paymentResult.pix_qr_code_base64 || paymentResult.data?.pix_qrcode,
     }
   } catch (error: any) {
     console.error('Erro ao criar pedido na Appmax:', error)
