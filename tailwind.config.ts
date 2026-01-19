@@ -36,6 +36,8 @@ const config: Config = {
         success: "#10B981",    // Verde sucesso
         warning: "#F59E0B",    // Laranja atenção
         error: "#EF4444",      // Vermelho erro
+  border: "#E2E8F0",     // Cor para utilitário border-border
+  foreground: "#0F172A", // Cor para utilitário text-foreground
       },
       borderRadius: {
         lg: "1rem",      // Cards grandes: 16px
