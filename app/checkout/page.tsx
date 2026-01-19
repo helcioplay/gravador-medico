@@ -165,8 +165,8 @@ export default function CheckoutPage() {
   const subtotal = basePrice + orderBumpsTotal
   const total = subtotal // Sem desconto PIX - desconto via cupom Appmax
   
-  // Calcula parcelas máximas baseado no valor (regra Appmax: min R$ 5 por parcela)
-  const maxInstallments = Math.min(12, Math.floor(total / 5))
+  // Calcula parcelas máximas baseado no valor (regra Appmax: max 8x, min R$ 5 por parcela)
+  const maxInstallments = Math.min(8, Math.floor(total / 5))
 
   // Validações
   const isStep1Valid = () => {
@@ -335,7 +335,7 @@ export default function CheckoutPage() {
       <div className="h-20 md:h-24"></div>
 
       {/* Main Content */}
-      <div className="container mx-auto max-w-7xl px-4 py-8 md:py-12">
+      <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-6 md:py-12">
         
         {/* Header */}
         <motion.div
@@ -343,15 +343,15 @@ export default function CheckoutPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8 md:mb-12"
         >
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-2 rounded-full text-sm font-bold mb-4 shadow-lg">
-            <Lock className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-bold mb-4 shadow-lg">
+            <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Checkout Seguro SSL</span>
           </div>
           
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-3 px-4">
             Complete seu Pedido
           </h1>
-          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4">
             Você está a um passo de economizar <span className="text-brand-600 font-bold">3 horas por dia</span> com o Método Gravador Médico
           </p>
         </motion.div>
@@ -417,7 +417,7 @@ export default function CheckoutPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="bg-white rounded-3xl shadow-xl p-6 md:p-8 border-2 border-brand-100"
+                  className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border-2 border-brand-100"
                 >
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center">
@@ -510,14 +510,14 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, x: 20 }}
                   className="space-y-6"
                 >
-                  <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8 border-2 border-brand-100">
+                  <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border-2 border-brand-100">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                         <Gift className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-black text-gray-900">Ofertas Especiais</h2>
-                        <p className="text-sm text-gray-600">Aproveite estas ofertas exclusivas por tempo limitado!</p>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900">Ofertas Especiais</h2>
+                        <p className="text-xs md:text-sm text-gray-600">Aproveite estas ofertas exclusivas por tempo limitado!</p>
                       </div>
                     </div>
 
@@ -613,14 +613,14 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, x: 20 }}
                   className="space-y-6"
                 >
-                  <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8 border-2 border-brand-100">
+                  <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border-2 border-brand-100">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                         <CreditCard className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-black text-gray-900">Pagamento</h2>
-                        <p className="text-sm text-gray-600">Escolha a forma de pagamento</p>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900">Pagamento</h2>
+                        <p className="text-xs md:text-sm text-gray-600">Escolha a forma de pagamento</p>
                       </div>
                     </div>
 
@@ -816,8 +816,8 @@ export default function CheckoutPage() {
             </AnimatePresence>
 
             {/* Depoimentos */}
-            <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8 border-2 border-brand-100">
-              <h3 className="text-xl font-black text-gray-900 mb-6 text-center">
+            <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border-2 border-brand-100">
+              <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center">
                 O que médicos estão dizendo
               </h3>
               
