@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(results, { status: 200 })
     }
 
-    const customerId = customerData.customer_id || customerData.id
+    const customerId = customerData.data?.id || customerData.customer_id || customerData.id
     console.log('✅ Cliente criado:', customerId)
     results.tests.customer.parsed = customerData
     results.tests.customer.customer_id = customerId
@@ -73,17 +73,18 @@ export async function GET(request: NextRequest) {
       body: JSON.stringify({
         'access-token': APPMAX_API_TOKEN,
         customer_id: customerId,
+        total: 36.00, // Total do carrinho (API calcula preço unitário)
         products: [
           {
-            sku: process.env.APPMAX_PRODUCT_ID || '32880073',
+            sku: process.env.APPMAX_PRODUCT_ID || '32991339',
             name: 'Gravador Médico - Teste',
             qty: 1,
-            price: 36.00,
             digital_product: 1,
           },
         ],
         shipping: 0,
         discount: 0,
+        freight_type: 'Sedex', // Requerido mesmo para produto digital
       }),
     })
 
@@ -107,12 +108,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(results, { status: 200 })
     }
 
-    const orderId = orderData.order_id || orderData.id
+    const orderId = orderData.data?.id || orderData.order_id || orderData.id
     console.log('✅ Pedido criado:', orderId)
     results.tests.order.parsed = orderData
     results.tests.order.order_id = orderId
 
-    // TESTE 3: Criar PIX (sem processar realmente)
+    // TESTE 3: Criar PIX
     console.log('\n🧪 TESTE 3: Testar endpoint de PIX...')
     const pixResponse = await fetch(`${APPMAX_API_URL}/payment/pix`, {
       method: 'POST',
@@ -126,6 +127,11 @@ export async function GET(request: NextRequest) {
         },
         customer: {
           customer_id: customerId,
+        },
+        payment: {
+          pix: {
+            document_number: '19100000000', // CPF obrigatório para PIX
+          },
         },
       }),
     })

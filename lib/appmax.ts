@@ -139,12 +139,14 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
     console.log('✅ Cliente criado:', customerId)
 
     // ETAPA 2: Criar Pedido
+    // Calcula o total do carrinho
+    let cartTotal = 36.00 // Produto principal
+
     const products = [
       {
         sku: APPMAX_PRODUCT_ID,
         name: 'Gravador Médico - Acesso Vitalício',
         qty: 1,
-        price: 36.00,
         digital_product: 1, // INFOPRODUTO
       },
     ]
@@ -152,15 +154,19 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
     // Adiciona order bumps
     if (data.order_bumps && data.order_bumps.length > 0) {
       for (const bump of data.order_bumps) {
+        const bumpPrice = bump.product_id === '32989468' ? 147.00 : 97.00
+        cartTotal += bumpPrice
+        
         products.push({
           sku: bump.product_id,
           name: `Order Bump ${bump.product_id}`,
           qty: bump.quantity,
-          price: bump.quantity === 1 ? 147.00 : 97.00, // TODO: mapear preços corretos
           digital_product: 1, // INFOPRODUTO
         })
       }
     }
+
+    console.log('📦 Criando pedido com total:', cartTotal)
 
     const orderResponse = await fetch(`${APPMAX_API_URL}/order`, {
       method: 'POST',
@@ -169,11 +175,12 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
       },
       body: JSON.stringify({
         'access-token': APPMAX_API_TOKEN,
+        total: cartTotal, // Envia total do carrinho (API calcula preço unitário)
         products,
         customer_id: customerId,
-        shipping: 0, // Produto digital
+        shipping: 0, // Produto digital - sem frete
         discount: 0,
-        digital_product: 1, // IMPORTANTE: Marca como infoproduto
+        freight_type: 'Sedex', // Requerido mesmo para produto digital
       }),
     })
 
@@ -201,6 +208,11 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
           },
           customer: {
             customer_id: customerId,
+          },
+          payment: {
+            pix: {
+              document_number: data.customer.cpf?.replace(/\D/g, '') || '',
+            },
           },
         }),
       })
@@ -271,7 +283,7 @@ export async function createAppmaxOrder(data: AppmaxOrderRequest): Promise<Appma
 export async function getAppmaxOrder(orderId: string) {
   try {
     // Endpoint presumido - pode não existir na API v3
-    const response = await fetch(`${APPMAX_API_URL}/api/v3/order/${orderId}`, {
+    const response = await fetch(`${APPMAX_API_URL}/order/${orderId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
