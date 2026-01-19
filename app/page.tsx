@@ -240,7 +240,7 @@ export default function LandingPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-white to-brand-50 text-gray-900 overflow-hidden">
+      <div className="min-h-screen bg-[#F5F5F5] text-gray-900 overflow-hidden">
       
       {/* WhatsApp Floating Button */}
       <motion.a
@@ -311,13 +311,15 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center gap-4">
             {/* Login button for existing customers */}
-            <a
-              href="http://www.gravadormedico.com.br/"
-              className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-semibold transition-colors text-sm lg:text-base group"
-            >
-              <LogIn className="w-4 h-4 lg:w-5 lg:h-5 group-hover:rotate-12 transition-transform" />
-              <span>Entrar</span>
-            </a>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/login"
+                className="flex items-center gap-2 text-brand-600 hover:text-brand-700 font-semibold transition-colors text-sm lg:text-base group"
+              >
+                <LogIn className="w-4 h-4 lg:w-5 lg:h-5 group-hover:rotate-12 transition-transform" />
+                <span>Entrar</span>
+              </Link>
+            </motion.div>
             
             {/* CTA button to checkout */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -406,14 +408,14 @@ export default function LandingPage() {
 
                   <div className="mt-8 space-y-3">
                     {/* Login */}
-                    <a
-                      href="http://www.gravadormedico.com.br/"
+                    <Link
+                      href="/login"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-brand-500 text-brand-600 rounded-full font-bold hover:bg-brand-50 transition-all"
                     >
                       <LogIn className="w-5 h-5" />
                       Entrar
-                    </a>
+                    </Link>
 
                     {/* CTA */}
                     <a
@@ -661,7 +663,7 @@ export default function LandingPage() {
                       className="flex-1 text-center md:text-left"
                     >
                       <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-6 leading-tight">
-                        <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
                           Tudo que você precisa em um só lugar
                         </span>
                       </h2>
@@ -767,7 +769,9 @@ export default function LandingPage() {
                       {[
                         'Método completo de transcrição automática',
                         'Configuração do Atalho Mágico no iPhone',
+                        'Técnica de Gravação Discreta durante consultas',
                         'Prompt IA personalizado para prontuários',
+                        'Casos práticos reais de especialidades médicas',
                         '4 Bônus Exclusivos para Potencializar seu Método',
                         'Acesso vitalício com atualizações gratuitas',
                         'Garantia incondicional de 7 dias'
@@ -846,7 +850,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="mb-4 md:mb-6"
           >
-              <div className="bg-gradient-to-br from-brand-50 via-brand-50 to-brand-50 rounded-lg md:rounded-xl lg:rounded-2xl p-4 md:p-6 lg:p-7 border-2 border-brand-200 shadow-xl">
+            <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50 rounded-lg md:rounded-xl lg:rounded-2xl p-4 md:p-6 lg:p-7 border-2 border-emerald-200 shadow-xl">
               <motion.h3
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -864,7 +868,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 }}
-                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-brand-200 hover:border-brand-400 transition-colors shadow-lg"
+                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-emerald-200 hover:border-emerald-400 transition-colors shadow-lg"
                 >
                   <div className="flex items-center justify-center mb-2 md:mb-3">
                     <div className="bg-red-100 rounded-full p-2 md:p-2.5">
@@ -884,7 +888,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 }}
-                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-brand-200 hover:border-brand-400 transition-colors shadow-lg"
+                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-emerald-200 hover:border-emerald-400 transition-colors shadow-lg"
                 >
                   <div className="flex items-center justify-center mb-2 md:mb-3">
                     <div className="bg-orange-100 rounded-full p-2 md:p-2.5">
@@ -904,7 +908,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.5 }}
-                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-brand-200 hover:border-brand-400 transition-colors shadow-lg"
+                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-emerald-200 hover:border-emerald-400 transition-colors shadow-lg"
                 >
                   <div className="flex items-center justify-center mb-2 md:mb-3">
                     <div className="bg-yellow-100 rounded-full p-2 md:p-2.5">
@@ -924,7 +928,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.6 }}
-                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-brand-200 hover:border-brand-400 transition-colors shadow-lg"
+                  className="bg-white rounded-md md:rounded-lg p-3 md:p-4 border-2 border-emerald-200 hover:border-emerald-400 transition-colors shadow-lg"
                 >
                   <div className="flex items-center justify-center mb-2 md:mb-3">
                     <div className="bg-brand-100 rounded-full p-2 md:p-2.5">
@@ -1785,13 +1789,13 @@ export default function LandingPage() {
               transition={{ duration: 4, repeat: Infinity }}
               className="inline-block mb-6"
             >
-              <div className="bg-gradient-to-r from-brand-600 to-brand-400 px-6 py-3 rounded-full shadow-xl">
+              <div className="bg-gradient-to-r from-brand-500 to-brand-300 px-6 py-3 rounded-full shadow-xl">
                 <p className="text-white font-black text-lg">Especialidades</p>
               </div>
             </motion.div>
 
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-6 px-4 leading-tight">
-              <span className="text-white">
+              <span className="bg-gradient-to-r from-brand-600 via-brand-500 to-brand-600 bg-clip-text text-transparent">
                 Funciona para sua especialidade
               </span>
             </h2>
@@ -1916,6 +1920,281 @@ export default function LandingPage() {
 
           {/* CTA no final */}
           <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-16 text-center"
+          >
+            <div className="bg-white rounded-2xl p-6 md:p-10 border-2 border-brand-200 shadow-xl max-w-3xl mx-auto">
+              <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
+                Não encontrou sua especialidade?
+              </h3>
+              <p className="text-xl text-gray-700 mb-8">
+                O Gravador Médico é <span className="text-brand-600 font-bold">100% personalizável</span>. 
+                Configure o formato do prontuário exatamente como você precisa!
+              </p>
+              <motion.button
+                animate={{ 
+                  scale: [1, 1.03, 1]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                onClick={scrollToCheckout}
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-[#5DBEA3] via-[#80D4C3] to-[#5DBEA3] bg-[length:200%_100%] animate-gradient text-white px-10 md:px-14 py-5 md:py-6 rounded-full text-xl md:text-2xl font-black shadow-2xl hover:shadow-[#5DBEA3]/50 transition-all"
+              >
+                <Wand2 className="w-6 h-6" />
+                Personalizar para minha especialidade
+                <ArrowRight className="w-6 h-6" />
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* BÔNUS COM MOCKUPS */}
+      <section id="bonus" className="relative py-12 md:py-20 lg:py-24 px-4 bg-white">
+        <div className="container mx-auto max-w-7xl">
+          
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-8 md:mb-16"
+          >
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 px-4 leading-tight">
+              <span className="bg-gradient-to-r from-brand-500 to-brand-300 bg-clip-text text-transparent">
+                Bônus Exclusivos
+              </span>
+            </h2>
+            <p className="text-base md:text-xl lg:text-2xl text-gray-700 px-4 max-w-4xl mx-auto leading-relaxed">
+              Além do Método Gravador Médico, você recebe acesso imediato a ferramentas que ampliam, personalizam e escalam o seu uso no dia a dia clínico.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-4 md:gap-6 max-w-6xl mx-auto">
+            {[
+              {
+                icon: Award,
+                number: 1,
+                title: "Ultrapersonalização",
+                subtitle: "Prontuário do Seu Jeito",
+                description: "Transforme o prontuário em uma extensão da sua identidade profissional. Configure seu nome, CRM, endereço, especialidade, estrutura preferida e observações padrão que aparecem automaticamente em cada prontuário gerado.",
+                benefits: [
+                  "Personalizador de prompt para prontuários",
+                  "Estrutura ajustável por especialidade",
+                  "Padronização profissional automática",
+                  "Consistência em todas as consultas"
+                ],
+                value: "R$ 297",
+                mockup: "personalization",
+              },
+              {
+                icon: MessageSquare,
+                number: 2,
+                title: "Mensagens Inteligentes",
+                subtitle: "Gerador de Mensagens para Acompanhamento",
+                description: "Da consulta direto para mensagens prontas, humanas e estratégicas. Transforme a transcrição da consulta em textos prontos para comunicação com pacientes e equipe — sem você precisar pensar no que escrever.",
+                benefits: [
+                  "Agradecimento pós-consulta",
+                  "Pedido de avaliação no Google",
+                  "Agendamento de retorno",
+                  "Orientações resumidas ao paciente",
+                  "Comunicação interna com equipe"
+                ],
+                value: "R$ 197",
+                mockup: "messages",
+              },
+              {
+                icon: Video,
+                number: 3,
+                title: "Uso Avançado",
+                subtitle: "Modo Expandido do Gravador Médico",
+                description: "O método começa na consulta, mas não termina nela. Aprenda a explorar todo o potencial do Gravador Médico para transcrever consultas online, organizar aulas, registrar ideias clínicas, criar resumos profissionais e apoiar produção de conteúdo.",
+                benefits: [
+                  "Transcrever Google Meet e Zoom",
+                  "Organizar aulas e congressos",
+                  "Registrar ideias clínicas por voz",
+                  "Resumos de conteúdos longos",
+                  "Produção de conteúdo educativo"
+                ],
+                value: "R$ 147",
+                mockup: "advanced",
+              },
+              {
+                icon: FolderOpen,
+                number: 4,
+                title: "Organização Definitiva",
+                subtitle: "Organização Automática & Backup Profissional",
+                description: "Seu histórico clínico organizado para o resto da carreira. Aprenda como exportar, organizar e armazenar suas transcrições e prontuários de forma profissional, segura e fácil de consultar.",
+                benefits: [
+                  "Organizar prontuários por data",
+                  "Criar histórico clínico estruturado",
+                  "Salvar documentos no Google Drive",
+                  "Manter backup seguro e acessível",
+                  "Evitar perda de informações"
+                ],
+                value: "R$ 127",
+                mockup: "drive",
+              },
+            ].map((bonus, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.2 }}
+              >
+                <Card3D className="h-full group">
+                  <div className="relative h-full bg-white backdrop-blur-xl rounded-2xl p-6 md:p-8 border-2 border-brand-200 hover:border-brand-400 transition-all overflow-hidden shadow-lg hover:shadow-2xl">
+                    
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-brand-300 opacity-0 group-hover:opacity-5 transition-opacity" />
+
+                    {/* Bonus badge */}
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-brand-600 to-brand-400 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg z-10">
+                      Bônus {index + 1}
+                    </div>
+
+                    {/* Mockup visual */}
+                    <div className="mb-6">
+                      <div className="w-full h-48 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl flex items-center justify-center overflow-hidden relative p-4">
+                        {bonus.mockup === "personalization" ? (
+                          <div className="w-full space-y-2">
+                            {[
+                              { label: "Nome", icon: "👨‍⚕️", value: "Dr(a). João Silva" },
+                              { label: "CRM", icon: "🏥", value: "12345-SP" },
+                              { label: "Endereço", icon: "📍", value: "Rua das Flores, 123" },
+                            ].map((field, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ x: -50, opacity: 0 }}
+                                whileInView={{ x: 0, opacity: 1 }}
+                                transition={{ delay: i * 0.15 }}
+                                viewport={{ once: true }}
+                                className="bg-white rounded-lg p-2 shadow-md flex items-center gap-2"
+                              >
+                                <span className="text-xl">{field.icon}</span>
+                                <div className="flex-1">
+                                  <p className="text-[10px] text-gray-500 font-semibold">{field.label}</p>
+                                  <p className="text-xs text-gray-800 font-bold">{field.value}</p>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        ) : bonus.mockup === "advanced" ? (
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { icon: "▶️", name: "YouTube", color: "from-red-400 to-red-600" },
+                              { icon: "📹", name: "Meet", color: "from-brand-400 to-brand-600" },
+                              { icon: "💬", name: "WhatsApp", color: "from-green-500 to-green-700" },
+                              { icon: "📸", name: "Instagram", color: "from-pink-400 to-purple-600" },
+                              { icon: "📱", name: "Telegram", color: "from-blue-400 to-blue-600" },
+                              { icon: "🎙️", name: "Podcast", color: "from-purple-400 to-purple-600" },
+                            ].map((app, i) => (
+                              <motion.div
+                                key={i}
+                                initial={{ scale: 0, rotate: -180 }}
+                                whileInView={{ scale: 1, rotate: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                whileHover={{ scale: 1.15, y: -3 }}
+                                className={`bg-gradient-to-br ${app.color} rounded-xl p-2 shadow-lg cursor-pointer flex flex-col items-center justify-center`}
+                              >
+                                <span className="text-2xl mb-1">{app.icon}</span>
+                                <p className="text-white text-[9px] font-bold text-center">{app.name}</p>
+                              </motion.div>
+                            ))}
+                          </div>
+                        ) : bonus.mockup === "messages" ? (
+                          <div className="relative w-full flex flex-col items-center gap-3">
+                            <motion.div
+                              animate={{ scale: [1, 1.1, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                              className="relative bg-gradient-to-br from-brand-400 to-brand-600 p-4 rounded-2xl shadow-xl"
+                            >
+                              <MessageSquare className="w-12 h-12 text-white" />
+                            </motion.div>
+                            <motion.div
+                              initial={{ y: 20, opacity: 0 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              transition={{ delay: 0.3 }}
+                              className="bg-white rounded-lg p-3 shadow-lg max-w-[200px]"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-2 h-2 bg-brand-500 rounded-full animate-pulse" />
+                                <p className="text-xs font-bold text-gray-700">Gerando mensagens...</p>
+                              </div>
+                              <p className="text-[10px] text-gray-600">Acompanhamento paciente</p>
+                            </motion.div>
+                          </div>
+                        ) : (
+                          <div className="relative w-full flex flex-col items-center gap-3">
+                            <div className="relative">
+                              <img src="/images/drive-icon.png" alt="Google Drive" className="w-16 h-16" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 w-full">
+                              {["📅 2025-01", "📅 2025-02", "📅 2025-03", "📅 2025-04"].map((folder, i) => (
+                                <motion.div
+                                  key={i}
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  transition={{ delay: i * 0.1 }}
+                                  className="bg-blue-100 rounded-lg p-2 text-center"
+                                >
+                                  <p className="text-[10px] font-bold text-blue-700">{folder}</p>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Icon */}
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      className="mb-4 inline-block"
+                    >
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-yellow-500 rounded-xl blur-lg opacity-30" />
+                        <div className="relative bg-gradient-to-br from-yellow-400 to-orange-500 p-3 rounded-xl shadow-lg">
+                          <bonus.icon className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    <div className="mb-4">
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                        {bonus.title}
+                      </h3>
+                      <p className="text-base md:text-lg font-semibold text-brand-600 mb-3">
+                        {bonus.subtitle}
+                      </p>
+                      <p className="text-base text-gray-700 leading-relaxed mb-4">
+                        {bonus.description}
+                      </p>
+                      
+                      {/* Lista de benefícios */}
+                      <div className="space-y-2 mb-4">
+                        {bonus.benefits.map((benefit, i) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <Check className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-600">{benefit}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-brand-600 text-base font-bold">
+                        Valor real: {bonus.value} • Hoje: <span className="text-yellow-600">GRÁTIS</span>
+                      </p>
+                    </div>
+                  </div>
+                </Card3D>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Total value */}
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -1973,13 +2252,334 @@ export default function LandingPage() {
                 scale: [1, 1.03, 1]
               }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-[#5DBEA3] via-[#80D4C3] to-[#5DBEA3] bg-[length:200%_100%] animate-gradient text-white px-10 sm:px-14 py-5 sm:py-6 rounded-full text-xl sm:text-2xl font-black shadow-2xl hover:shadow-[#5DBEA3]/50 transition-all whitespace-nowrap"
+              className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-[#5DBEA3] via-[#80D4C3] to-[#5DBEA3] bg-[length:200%_100%] animate-gradient text-white px-10 sm:px-14 py-5 sm:py-6 rounded-full text-xl sm:text-2xl font-black shadow-2xl hover:shadow-[#5DBEA3]/50 transition-all"
             >
               <Mic className="w-6 h-6 flex-shrink-0" />
               <span>Começar agora</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform flex-shrink-0" />
             </motion.button>
             <p className="text-base text-white mt-4 font-semibold">Sistema completo + 4 bônus • R$ 36</p>
+          </motion.div>
+
+        </div>
+      </section>
+
+      {/* DEPOIMENTOS COM CARROSSEL INFINITO AUTOMÁTICO */}
+      <section className="relative py-12 md:py-20 lg:py-24 bg-white overflow-hidden">
+        <div className="container mx-auto max-w-7xl px-4 mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              className="inline-block mb-6 px-8 py-3 bg-gradient-to-r from-brand-100 to-brand-100 rounded-full"
+            >
+              <p className="text-gray-900 font-bold text-lg">
+                Usado por centenas de médicos
+                <span className="text-gray-600 text-sm block">(em todo o Brasil)</span>
+              </p>
+            </motion.div>
+            
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 text-gray-900">
+              O que médicos estão dizendo
+            </h2>
+          </motion.div>
+        </div>
+
+        {/* Carrossel de largura total com autoplay infinito */}
+        <div className="relative w-full">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex">
+              {/* Duplicar array para efeito loop infinito */}
+              {[...Array(2)].map((_, arrayIndex) => (
+                [
+                  {
+                    specialty: "Cardiologista",
+                    age: "45 anos",
+                    gender: "Médica",
+                    text: "...economizo pelo menos 3 horas por dia em digitação, meus pacientes também adoram.",
+                    bgColor: "from-white to-brand-50",
+                  },
+                  {
+                    specialty: "Pediatra",
+                    age: "38 anos",
+                    gender: "Médico",
+                    text: "Já recomendamos o Gravador Médico para vários colegas da nossa equipe.",
+                    bgColor: "from-white to-brand-50",
+                  },
+                  {
+                    specialty: "Psiquiatra",
+                    age: "42 anos",
+                    gender: "Médica",
+                    text: "Me permite focar totalmente no paciente, ao invés de ficar digitando no prontuário durante a consulta.",
+                    bgColor: "from-white to-brand-50",
+                  },
+                  {
+                    specialty: "Clínico Geral",
+                    age: "51 anos",
+                    gender: "Médico",
+                    text: "Está documentando enquanto eu e o paciente conversamos e gerando notas precisas e detalhadas como se eu tivesse escrito.",
+                    bgColor: "from-white to-brand-50",
+                  },
+                  {
+                    specialty: "Ortopedista",
+                    age: "39 anos",
+                    gender: "Médica",
+                    text: "Consigo atender mais pacientes sem comprometer a qualidade do atendimento. Revolucionou minha prática!",
+                    bgColor: "from-white to-brand-50",
+                  },
+                  {
+                    specialty: "Dermatologista",
+                    age: "47 anos",
+                    gender: "Médico",
+                    text: "A transcrição é tão precisa que parece que eu mesmo escrevi. Economia de tempo impressionante!",
+                    bgColor: "from-white to-brand-50",
+                  },
+                ].map((testimonial, index) => (
+                  <div
+                    key={`${arrayIndex}-${index}`}
+                    className="flex-[0_0_90%] sm:flex-[0_0_60%] md:flex-[0_0_45%] lg:flex-[0_0_30%] min-w-0 px-3 py-2"
+                  >
+                    <motion.div
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      transition={{ duration: 0.3 }}
+                      className="h-full"
+                    >
+                      <div className={`relative h-full min-h-[240px] bg-gradient-to-br ${testimonial.bgColor} backdrop-blur-xl rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border-2 border-white`}>
+                        
+                        {/* Testimonial text */}
+                        <p className="text-gray-800 text-lg leading-relaxed mb-8 font-medium italic relative z-10 min-h-[80px]">
+                          "{testimonial.text}"
+                        </p>
+
+                        {/* Author info - sem avatar */}
+                        <div className="flex flex-col gap-1">
+                          <p className="text-brand-600 font-bold text-base">{testimonial.specialty}</p>
+                          <p className="text-gray-700 font-semibold text-sm">{testimonial.gender}, {testimonial.age}</p>
+                        </div>
+
+                        {/* Quote decoration */}
+                        <div className="absolute top-4 right-4 opacity-10">
+                          <MessageSquare className="w-12 h-12 text-purple-600" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                ))
+              ))}
+            </div>
+          </div>
+
+          {/* "View More" button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+          </motion.div>
+        </div>
+
+      </section>
+
+      {/* GARANTIA */}
+      <section id="garantia" className="relative py-12 md:py-20 lg:py-24 px-4 bg-white">
+        <div className="container mx-auto max-w-3xl">
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <Card3D className="group">
+              <div className="relative bg-gradient-to-br from-brand-50 to-brand-50 backdrop-blur-xl rounded-2xl md:rounded-3xl p-6 md:p-10 border-2 border-brand-200 text-center overflow-hidden shadow-2xl">
+                
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-brand-500 opacity-0 group-hover:opacity-5 transition-opacity" />
+
+                {/* Shield icon */}
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="relative inline-block mb-6"
+                >
+                  <div className="absolute inset-0 bg-brand-500 rounded-full blur-2xl opacity-30" />
+                  <div className="relative bg-gradient-to-br from-brand-500 to-brand-300 p-5 md:p-6 rounded-full shadow-xl">
+                    <Shield className="w-12 h-12 md:w-16 md:h-16 text-white" />
+                  </div>
+                </motion.div>
+
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 md:mb-6 px-2">
+                  <span className="bg-gradient-to-r from-brand-500 to-brand-300 bg-clip-text text-transparent">
+                    Garantia de 7 Dias
+                  </span>
+                </h2>
+
+                <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-4 md:mb-6 max-w-2xl mx-auto px-2">
+                  Teste o método. Experimente. Configure em 5 minutos. Grave sua primeira consulta. Use durante uma semana inteira.
+                </p>
+
+                <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6 md:mb-8 max-w-2xl mx-auto px-2">
+                  Se não ficar satisfeito, por qualquer motivo, é só entrar em contato. Devolvemos 100% do seu dinheiro.
+                </p>
+
+                <div className="inline-block bg-brand-100 border-2 border-brand-300 rounded-xl p-4 md:p-5">
+                  <p className="text-brand-700 text-sm md:text-base font-bold">
+                    Sem perguntas. Sem burocracia. Rápido e simples.
+                  </p>
+                </div>
+
+                {/* CTA após Garantia */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-8"
+                >
+                  <motion.button
+                    onClick={scrollToCheckout}
+                    animate={{ 
+                      scale: [1, 1.03, 1]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-[#5DBEA3] via-[#80D4C3] to-[#5DBEA3] bg-[length:200%_100%] animate-gradient text-white px-10 sm:px-14 py-5 sm:py-6 rounded-full text-xl sm:text-2xl font-black shadow-2xl hover:shadow-[#5DBEA3]/50 transition-all whitespace-nowrap"
+                  >
+                    <Mic className="w-6 h-6 flex-shrink-0" />
+                    <span>Testar sem risco</span>
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                  </motion.button>
+                  <p className="text-base text-gray-600 mt-4 font-semibold">Garantia total • Apenas R$ 36</p>
+                </motion.div>
+              </div>
+            </Card3D>
+          </motion.div>
+
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="relative py-12 md:py-20 lg:py-24 px-4 bg-white">
+        <div className="container mx-auto max-w-3xl">
+          
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center space-y-12"
+          >
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight px-4">
+              <span className="bg-gradient-to-r from-gray-900 to-brand-700 bg-clip-text text-transparent">
+                Seja o médico que<br />você sempre quis ser
+              </span>
+            </h2>
+
+            <p className="text-lg md:text-xl lg:text-2xl text-gray-700 leading-relaxed max-w-2xl mx-auto px-4">
+              Mais tempo para ouvir. Mais atenção para cuidar. Mais energia para o que realmente importa: seus pacientes.
+            </p>
+
+            <Card3D className="group max-w-2xl mx-auto">
+              <div className="relative bg-white rounded-2xl md:rounded-3xl border-4 border-brand-500 shadow-2xl overflow-hidden">
+                
+                {/* Header verde */}
+                <div className="bg-gradient-to-br from-brand-600 to-brand-500 text-white text-center py-6 px-4">
+                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-black mb-2">GRAVADOR MÉDICO</h3>
+                  <p className="text-base md:text-lg font-medium">Método Completo + Bônus</p>
+                </div>
+
+                {/* Conteúdo */}
+                <div className="p-6 md:p-8 space-y-6">
+                  
+                  {/* Preços */}
+                  <div className="text-center space-y-2">
+                    <p className="text-gray-500 text-lg line-through">De: R$ 197</p>
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-xl md:text-2xl text-gray-700 font-semibold">Por apenas:</span>
+                      <span className="text-5xl md:text-6xl font-black text-gray-900">R$ 36</span>
+                    </div>
+                    <p className="text-gray-600 text-base">Pagamento único ou 8x de R$ 5,40</p>
+                  </div>
+
+                  {/* Lista de benefícios */}
+                  <div className="space-y-3">
+                    {[
+                      'Método completo de transcrição automática',
+                      'Configuração do Atalho Mágico no iPhone',
+                      'Técnica de Gravação Discreta durante consultas',
+                      'Prompt IA personalizado para prontuários',
+                      'Casos práticos reais de especialidades médicas',
+                      '4 Bônus Exclusivos para Potencializar seu Método',
+                      'Acesso vitalício com atualizações gratuitas',
+                      'Garantia incondicional de 7 dias'
+                    ].map((item, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center mt-0.5">
+                          <Check className="w-4 h-4 text-brand-600" />
+                        </div>
+                        <p className="text-gray-700 text-sm md:text-base leading-snug">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA Principal */}
+                  <button
+                    onClick={handleCheckout}
+                    className="w-full"
+                  >
+                    <motion.div
+                      animate={{ scale: [1, 1.02, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white py-4 md:py-5 rounded-xl text-xl md:text-2xl font-black shadow-lg transition-all"
+                    >
+                      COMPRAR AGORA - R$ 36
+                    </motion.div>
+                  </button>
+
+                  {/* Trust badges */}
+                  <div className="flex items-center justify-center gap-4 pt-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      <span>Compra segura</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-5 h-5" />
+                      <span>Acesso imediato</span>
+                    </div>
+                  </div>
+
+                  {/* Garantia */}
+                  <div className="text-center pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-center gap-2 text-brand-600">
+                      <Shield className="w-5 h-5" />
+                      <span className="font-bold">Garantia incondicional de 7 dias</span>
+                    </div>
+                  </div>
+
+                  {/* Bônus limitado */}
+                  <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl">🎁</div>
+                      <div className="flex-1">
+                        <p className="text-orange-800 font-bold text-sm md:text-base leading-relaxed">
+                          <span className="font-black">BÔNUS LIMITADO:</span> 4 Bônus Exclusivos (Ultrapersonalização + Mensagens + Avançado + Organização)<br />
+                          <span className="bg-orange-200 px-2 py-0.5 rounded mt-1 inline-block">Apenas {remainingAccess} acessos restantes</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </Card3D>
+
+            <p className="text-gray-500 text-sm px-4">
+              Pagamento 100% seguro • Seus dados estão protegidos com criptografia SSL
+            </p>
           </motion.div>
 
         </div>
