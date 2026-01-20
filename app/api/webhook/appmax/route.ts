@@ -48,6 +48,10 @@ function mapStatusToDatabase(appmaxStatus: string): string {
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
   
+  console.log('🔔 ============================================')
+  console.log('🔔 WEBHOOK APPMAX RECEBIDO:', new Date().toISOString())
+  console.log('🔔 ============================================')
+  
   try {
     // Verificar se o Supabase Admin está configurado
     if (!supabaseAdmin) {
@@ -58,10 +62,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Ler o corpo da requisição
     const body = await request.json()
-
-    console.log('🔔 Webhook APPMAX - Evento:', body.event || 'unknown')
-    console.log('📥 Payload:', JSON.stringify(body, null, 2))
+    
+    console.log('📦 Payload completo recebido:', JSON.stringify(body, null, 2))
+    console.log('🔔 Evento:', body.event || 'unknown')
 
     // IP de origem
     const ipAddress = request.headers.get('x-forwarded-for') || 
