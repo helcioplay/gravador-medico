@@ -4,170 +4,125 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 /**
- * 🍪 BANNER DE CONSENTIMENTO LGPD
+ * 🍪 BANNER DE CONSENTIMENTO LGPD - Minimalista
  * 
- * Exibe banner de cookies conforme LGPD e GDPR
- * - Salva consentimento no localStorage
- * - Links para Política de Privacidade e Termos de Uso
- * - Design profissional e não intrusivo
- * - Bloqueia tracking até aceitação
+ * - ID do site para compliance
+ * - Design limpo e não obstrutivo
+ * - Permite navegar sem decisão obrigatória
+ * - Sem overlay/blur no fundo
  */
 export default function CookieBanner() {
   const [showBanner, setShowBanner] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar se usuário já deu consentimento
+    // Verificar se usuário já interagiu com o banner
     const consent = localStorage.getItem('cookie_consent')
     
     if (!consent) {
-      // Delay de 1 segundo para não ser intrusivo
+      // Mostrar banner após 2 segundos
       setTimeout(() => {
         setShowBanner(true)
-        setIsLoading(false)
-      }, 1000)
-    } else {
-      setIsLoading(false)
+      }, 2000)
     }
   }, [])
 
   const handleAccept = () => {
-    // Salvar consentimento
     localStorage.setItem('cookie_consent', 'accepted')
     localStorage.setItem('cookie_consent_date', new Date().toISOString())
-    
     setShowBanner(false)
-
-    // Disparar evento customizado para iniciar tracking
-    window.dispatchEvent(new Event('cookieConsentGiven'))
     
-    console.log('✅ Consentimento de cookies aceito')
+    // Disparar evento para iniciar tracking
+    window.dispatchEvent(new Event('cookieConsentGiven'))
   }
 
   const handleReject = () => {
-    // Salvar rejeição (apenas cookies essenciais)
     localStorage.setItem('cookie_consent', 'rejected')
     localStorage.setItem('cookie_consent_date', new Date().toISOString())
-    
     setShowBanner(false)
-    
-    console.log('❌ Consentimento de cookies rejeitado - apenas essenciais')
   }
 
-  // Não renderizar nada enquanto carrega ou se já foi aceito
-  if (isLoading || !showBanner) {
-    return null
-  }
+  if (!showBanner) return null
 
   return (
-    <>
-      {/* Overlay semi-transparente */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-fade-in" />
-      
-      {/* Banner */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 animate-slide-up">
-        <div className="max-w-6xl mx-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden">
-          
-          {/* Barra de destaque superior */}
-          <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-          
-          <div className="p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center gap-6">
-              
-              {/* Ícone de Cookie */}
-              <div className="flex-shrink-0">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <svg 
-                    className="w-8 h-8 text-white" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                    <circle cx="12" cy="12" r="10" strokeWidth={2} />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Conteúdo */}
-              <div className="flex-1 space-y-3">
-                <h3 className="text-xl md:text-2xl font-bold text-white">
-                  🍪 Cookies e Privacidade
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:max-w-md z-50 animate-slide-up">
+      <div className="bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+        
+        {/* Barra superior azul */}
+        <div className="h-1 bg-blue-600" />
+        
+        <div className="p-5">
+          {/* Cabeçalho com ID do site */}
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🍪</span>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">
+                  Cookies
                 </h3>
-                <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-                  Utilizamos cookies e tecnologias semelhantes para melhorar sua experiência, 
-                  personalizar conteúdo, analisar tráfego e exibir anúncios relevantes. 
-                  Seus dados são tratados conforme a <strong className="text-white">LGPD</strong> e <strong className="text-white">GDPR</strong>.
+                <p className="text-xs text-gray-500">
+                  ID: gravadormedico.com.br
                 </p>
-                
-                {/* Links para políticas */}
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <Link 
-                    href="/politica-privacidade" 
-                    className="text-blue-400 hover:text-blue-300 underline decoration-dotted underline-offset-4 transition-colors"
-                  >
-                    📄 Política de Privacidade
-                  </Link>
-                  <Link 
-                    href="/termos-de-uso" 
-                    className="text-blue-400 hover:text-blue-300 underline decoration-dotted underline-offset-4 transition-colors"
-                  >
-                    📋 Termos de Uso
-                  </Link>
-                </div>
-
-                {/* Tipos de cookies */}
-                <details className="text-xs text-slate-400">
-                  <summary className="cursor-pointer hover:text-slate-300 transition-colors">
-                    🔍 Ver detalhes dos cookies utilizados
-                  </summary>
-                  <div className="mt-3 space-y-2 pl-4 border-l-2 border-slate-700">
-                    <p><strong className="text-slate-300">Essenciais:</strong> Necessários para o funcionamento do site</p>
-                    <p><strong className="text-slate-300">Analytics:</strong> Google Analytics, métricas de performance</p>
-                    <p><strong className="text-slate-300">Marketing:</strong> Meta Pixel, Google Ads, remarketing</p>
-                    <p><strong className="text-slate-300">Funcionais:</strong> Preferências e personalização</p>
-                  </div>
-                </details>
               </div>
-
-              {/* Botões de Ação */}
-              <div className="flex flex-col gap-3 md:flex-shrink-0">
-                <button
-                  onClick={handleAccept}
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                >
-                  ✓ Aceitar Todos
-                </button>
-                
-                <button
-                  onClick={handleReject}
-                  className="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white font-medium rounded-xl transition-all duration-200"
-                >
-                  Apenas Essenciais
-                </button>
-              </div>
-
             </div>
+            
+            {/* Botão fechar (permite continuar sem decidir) */}
+            <button
+              onClick={() => setShowBanner(false)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Fechar"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Texto */}
+          <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+            Usamos cookies para melhorar sua experiência e analisar nosso tráfego. 
+            Ao continuar, você aceita nosso uso de cookies.
+          </p>
+
+          {/* Links */}
+          <div className="flex gap-3 text-xs mb-4">
+            <Link 
+              href="/politica-privacidade" 
+              className="text-blue-600 hover:text-blue-700 underline underline-offset-2"
+            >
+              Política de Privacidade
+            </Link>
+            <Link 
+              href="/termos-de-uso" 
+              className="text-blue-600 hover:text-blue-700 underline underline-offset-2"
+            >
+              Termos de Uso
+            </Link>
+          </div>
+
+          {/* Botões */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleAccept}
+              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+            >
+              Aceitar
+            </button>
+            <button
+              onClick={handleReject}
+              className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-md transition-colors"
+            >
+              Recusar
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Estilos para animações */}
+      {/* Animação */}
       <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
         @keyframes slide-up {
           from { 
             opacity: 0;
-            transform: translateY(100%); 
+            transform: translateY(20px); 
           }
           to { 
             opacity: 1;
@@ -175,14 +130,10 @@ export default function CookieBanner() {
           }
         }
         
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-        
         .animate-slide-up {
-          animation: slide-up 0.4s ease-out;
+          animation: slide-up 0.3s ease-out;
         }
       `}</style>
-    </>
+    </div>
   )
 }
