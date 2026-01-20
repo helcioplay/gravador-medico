@@ -50,12 +50,22 @@ DROP POLICY IF EXISTS "Permitir escrita de users" ON users;
 CREATE POLICY "Permitir escrita de users" ON users FOR ALL USING (true);
 
 -- ========================================
--- CRIAR USUÁRIO ADMIN (VOCÊ)
+-- CRIAR USUÁRIOS ADMIN
 -- ========================================
--- Insere você como usuário admin se não existir
+-- Insere os 2 admins se não existirem
 
+-- Admin 1: helciomattos@gmail.com
 INSERT INTO users (email, name, has_access, role)
 VALUES ('helciomattos@gmail.com', 'Helcio Mattos', true, 'admin')
+ON CONFLICT (email) DO UPDATE
+SET 
+  has_access = true,
+  role = 'admin',
+  updated_at = NOW();
+
+-- Admin 2: contato@helciomattos.com.br
+INSERT INTO users (email, name, has_access, role)
+VALUES ('contato@helciomattos.com.br', 'Helcio Mattos', true, 'admin')
 ON CONFLICT (email) DO UPDATE
 SET 
   has_access = true,
@@ -66,3 +76,7 @@ SET
 -- FIM
 -- ========================================
 -- Execute este script no Supabase SQL Editor
+-- 
+-- ACESSO:
+-- Email: helciomattos@gmail.com OU contato@helciomattos.com.br
+-- Senha: QUALQUER (o sistema aceita qualquer senha por enquanto)
