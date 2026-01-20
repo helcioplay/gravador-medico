@@ -19,6 +19,8 @@ function LoginForm() {
     setLoading(true)
     setError("")
 
+    console.log('🔐 Iniciando login...', { email })
+
     try {
       // Login com API customizada (JWT)
       const response = await fetch('/api/auth/login', {
@@ -29,20 +31,26 @@ function LoginForm() {
         body: JSON.stringify({ email, password }),
       })
 
+      console.log('📡 Resposta da API:', response.status)
+
       const data = await response.json()
+      console.log('📦 Dados recebidos:', data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Email ou senha incorretos')
       }
 
       // Salvar token no localStorage
+      console.log('💾 Salvando token no localStorage...')
       localStorage.setItem('auth_token', data.token)
+      console.log('✅ Token salvo!')
 
       // Redirecionar
       const redirect = searchParams.get('redirect') || '/admin/dashboard'
+      console.log('🚀 Redirecionando para:', redirect)
       router.push(redirect)
     } catch (err: any) {
-      console.error('Erro ao fazer login:', err)
+      console.error('❌ Erro ao fazer login:', err)
       setError(err.message || 'Email ou senha incorretos')
     } finally {
       setLoading(false)
