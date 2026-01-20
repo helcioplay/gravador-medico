@@ -125,6 +125,31 @@ export default function CheckoutPage() {
     }
   }, [pixData?.orderId, formData.email, router])
 
+  // 🎯 CAPTURA AUTOMÁTICA: Salva carrinho quando usuário sai da página
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Salva carrinho antes de sair se tiver dados
+      if (formData.email && formData.email.length >= 5) {
+        handleSaveAbandonedCart()
+      }
+    }
+
+    // Salva também quando muda de página/fecha tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && formData.email && formData.email.length >= 5) {
+        handleSaveAbandonedCart()
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [formData.email, formData.name, formData.phone, formData.cpf, selectedOrderBumps, appliedCupom, currentStep])
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60

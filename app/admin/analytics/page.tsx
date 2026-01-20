@@ -284,17 +284,17 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Card de carrinhos abandonados */}
-      <Card className="p-6 bg-red-50 border-red-200">
+      <Card className="p-6 bg-amber-50 border-amber-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-red-900">⚠️ Carrinhos Abandonados</h3>
-            <p className="text-red-700 mt-1">
+            <h3 className="text-lg font-bold text-gray-900">⚠️ Carrinhos Abandonados</h3>
+            <p className="text-gray-700 mt-1">
               {data?.abandonedCarts || 0} carrinhos foram abandonados neste período
             </p>
           </div>
           <a
-            href="/dashboard/abandoned-carts"
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            href="/admin/abandoned-carts"
+            className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
           >
             Ver Carrinhos
           </a>
