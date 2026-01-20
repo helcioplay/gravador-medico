@@ -3,13 +3,14 @@
 import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { UAParser } from 'ua-parser-js' // ✅ Importação CORRETA (com chaves)
 import { v4 as uuidv4 } from 'uuid'
 
 /**
  * 🚀 ANALYTICS TRACKER NÍVEL NASA
  * 
  * Sistema de rastreamento profissional que captura:
- * - Device/OS/Browser (detecção via user agent)
+ * - Device/OS/Browser (via ua-parser-js)
  * - Geolocalização (via API ipapi.co)
  * - UTM Parameters (campanhas de marketing)
  * - Facebook Cookies (_fbp, _fbc) para CAPI
@@ -67,47 +68,15 @@ export default function AnalyticsTracker() {
       }
 
       // ============================================
-      // 2. DEVICE/OS/BROWSER (Detecção Manual)
+      // 2. DEVICE/OS/BROWSER (ua-parser-js v2.0)
       // ============================================
-      const userAgent = navigator.userAgent.toLowerCase()
-      
-      // Detectar tipo de dispositivo
-      let deviceType = 'desktop'
-      if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent)) {
-        deviceType = 'tablet'
-      } else if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile|wpdesktop/i.test(userAgent)) {
-        deviceType = 'mobile'
-      }
+      const parser = new UAParser(navigator.userAgent)
+      const result = parser.getResult()
 
-      // Detectar OS
-      let os = 'Desconhecido'
-      if (/windows nt 10/i.test(userAgent)) os = 'Windows 10'
-      else if (/windows nt 11/i.test(userAgent)) os = 'Windows 11'
-      else if (/windows/i.test(userAgent)) os = 'Windows'
-      else if (/mac os x/i.test(userAgent)) os = 'macOS'
-      else if (/iphone|ipad|ipod/i.test(userAgent)) os = 'iOS'
-      else if (/android/i.test(userAgent)) os = 'Android'
-      else if (/linux/i.test(userAgent)) os = 'Linux'
-
-      // Detectar Browser
-      let browser = 'Desconhecido'
-      let browserVersion = ''
-      if (/edg\//i.test(userAgent)) {
-        browser = 'Edge'
-        browserVersion = userAgent.match(/edg\/(\d+)/i)?.[1] || ''
-      } else if (/chrome/i.test(userAgent) && !/edg/i.test(userAgent)) {
-        browser = 'Chrome'
-        browserVersion = userAgent.match(/chrome\/(\d+)/i)?.[1] || ''
-      } else if (/safari/i.test(userAgent) && !/chrome/i.test(userAgent)) {
-        browser = 'Safari'
-        browserVersion = userAgent.match(/version\/(\d+)/i)?.[1] || ''
-      } else if (/firefox/i.test(userAgent)) {
-        browser = 'Firefox'
-        browserVersion = userAgent.match(/firefox\/(\d+)/i)?.[1] || ''
-      } else if (/opera|opr\//i.test(userAgent)) {
-        browser = 'Opera'
-        browserVersion = userAgent.match(/(?:opera|opr)\/(\d+)/i)?.[1] || ''
-      }
+      const deviceType = result.device?.type || 'desktop' // mobile, tablet, desktop
+      const os = result.os?.name || 'Desconhecido' // iOS, Android, Windows, macOS
+      const browser = result.browser?.name || 'Desconhecido' // Chrome, Safari, Firefox
+      const browserVersion = result.browser?.version || ''
 
       // ============================================
       // 3. UTM PARAMETERS (Campanhas de Marketing)
@@ -148,8 +117,16 @@ export default function AnalyticsTracker() {
         city: null as string | null 
       }
 
+      // Buscar geolocalização com timeout de 3 segundos
       try {
-        const geoResponse = await fetch('https://ipapi.co/json/')
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 3000) // 3s timeout
+        
+        const geoResponse = await fetch('https://ipapi.co/json/', {
+          signal: controller.signal
+        })
+        clearTimeout(timeoutId)
+        
         if (geoResponse.ok) {
           const geo = await geoResponse.json()
           geoData = {
@@ -159,8 +136,11 @@ export default function AnalyticsTracker() {
             city: geo.city || null
           }
         }
-      } catch (geoError) {
-        console.warn('⚠️ Não foi possível obter geolocalização:', geoError)
+      } catch (geoError: any) {
+        // Ignorar erro silenciosamente (não é crítico)
+        if (geoError.name !== 'AbortError') {
+          console.warn('⚠️ Geo API timeout ou erro')
+        }
       }
 
       // ============================================
