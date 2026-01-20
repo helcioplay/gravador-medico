@@ -6,6 +6,17 @@
 -- =============================================
 
 -- ========================================
+-- 0. FUNÇÃO: Trigger para updated_at
+-- ========================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ========================================
 -- 1. TABELA: customers (Clientes)
 -- ========================================
 CREATE TABLE IF NOT EXISTS customers (
@@ -129,54 +140,97 @@ CREATE TRIGGER update_products_updated_at
 -- ========================================
 -- 3. TABELA: sales (Vendas) - ATUALIZADA
 -- ========================================
-CREATE TABLE IF NOT EXISTS sales (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- OBS: Esta tabela já existe, vamos apenas adicionar colunas faltantes
+-- Se a tabela não existir, será criada. Se existir, pula a criação.
+
+DO $$ 
+BEGIN
+  -- Criar tabela se não existir
+  IF NOT EXISTS (SELECT FROM pg_tables WHERE tablename = 'sales') THEN
+    CREATE TABLE sales (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      
+      -- Relacionamentos
+      customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+      
+      -- Identificadores externos
+      appmax_order_id TEXT UNIQUE NOT NULL,
+      appmax_customer_id TEXT,
+      
+      -- Dados do cliente (desnormalizados para histórico)
+      customer_name TEXT NOT NULL,
+      customer_email TEXT NOT NULL,
+      customer_phone TEXT,
+      customer_cpf TEXT,
+      
+      -- Valores
+      total_amount NUMERIC(10,2) NOT NULL,
+      subtotal NUMERIC(10,2) NOT NULL,
+      discount NUMERIC(10,2) DEFAULT 0,
+      shipping_cost NUMERIC(10,2) DEFAULT 0,
+      tax NUMERIC(10,2) DEFAULT 0,
+      
+      -- Status e pagamento
+      status TEXT NOT NULL,
+      payment_method TEXT,
+      payment_status TEXT,
+      installments INTEGER DEFAULT 1,
+      
+      -- Tracking e origem
+      utm_source TEXT,
+      utm_campaign TEXT,
+      utm_medium TEXT,
+      ip_address TEXT,
+      session_id TEXT,
+      
+      -- Datas importantes
+      paid_at TIMESTAMP WITH TIME ZONE,
+      refunded_at TIMESTAMP WITH TIME ZONE,
+      canceled_at TIMESTAMP WITH TIME ZONE,
+      
+      -- Metadata
+      metadata JSONB DEFAULT '{}'::jsonb,
+      
+      -- Timestamps
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+  END IF;
   
-  -- Relacionamentos
-  customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+  -- Adicionar colunas que podem estar faltando (se a tabela já existia)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='customer_id') THEN
+    ALTER TABLE sales ADD COLUMN customer_id UUID REFERENCES customers(id) ON DELETE SET NULL;
+  END IF;
   
-  -- Identificadores externos
-  appmax_order_id TEXT UNIQUE NOT NULL,
-  appmax_customer_id TEXT,
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='shipping_cost') THEN
+    ALTER TABLE sales ADD COLUMN shipping_cost NUMERIC(10,2) DEFAULT 0;
+  END IF;
   
-  -- Dados do cliente (desnormalizados para histórico)
-  customer_name TEXT NOT NULL,
-  customer_email TEXT NOT NULL,
-  customer_phone TEXT,
-  customer_cpf TEXT,
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='tax') THEN
+    ALTER TABLE sales ADD COLUMN tax NUMERIC(10,2) DEFAULT 0;
+  END IF;
   
-  -- Valores
-  total_amount NUMERIC(10,2) NOT NULL,
-  subtotal NUMERIC(10,2) NOT NULL,
-  discount NUMERIC(10,2) DEFAULT 0,
-  shipping_cost NUMERIC(10,2) DEFAULT 0,
-  tax NUMERIC(10,2) DEFAULT 0,
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='payment_status') THEN
+    ALTER TABLE sales ADD COLUMN payment_status TEXT;
+  END IF;
   
-  -- Status e pagamento
-  status TEXT NOT NULL, -- pending, approved, paid, completed, refused, refunded
-  payment_method TEXT, -- pix, credit_card, boleto
-  payment_status TEXT, -- pending, paid, failed, refunded
-  installments INTEGER DEFAULT 1,
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='installments') THEN
+    ALTER TABLE sales ADD COLUMN installments INTEGER DEFAULT 1;
+  END IF;
   
-  -- Tracking e origem
-  utm_source TEXT,
-  utm_campaign TEXT,
-  utm_medium TEXT,
-  ip_address TEXT,
-  session_id TEXT,
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='refunded_at') THEN
+    ALTER TABLE sales ADD COLUMN refunded_at TIMESTAMP WITH TIME ZONE;
+  END IF;
   
-  -- Datas importantes
-  paid_at TIMESTAMP WITH TIME ZONE,
-  refunded_at TIMESTAMP WITH TIME ZONE,
-  canceled_at TIMESTAMP WITH TIME ZONE,
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='canceled_at') THEN
+    ALTER TABLE sales ADD COLUMN canceled_at TIMESTAMP WITH TIME ZONE;
+  END IF;
   
-  -- Metadata
-  metadata JSONB DEFAULT '{}'::jsonb,
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='sales' AND column_name='session_id') THEN
+    ALTER TABLE sales ADD COLUMN session_id TEXT;
+  END IF;
   
-  -- Timestamps
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+END $$;
 
 -- Índices para sales
 CREATE INDEX IF NOT EXISTS idx_sales_customer_id ON sales(customer_id);
