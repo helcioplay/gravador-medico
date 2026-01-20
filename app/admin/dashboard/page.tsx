@@ -108,6 +108,22 @@ export default function AdminDashboard() {
       const periodDays = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24))
       const previousStartDate = startOfDay(subDays(startDateObj, periodDays))
       
+      console.log('📅 Dashboard - Período:', {
+        start: startDateObj.toISOString(),
+        end: endDateObj.toISOString(),
+        days: periodDays
+      })
+      
+      // TESTE: Buscar TODAS as vendas (sem filtro de data)
+      const { data: allSales, error: testError } = await supabase
+        .from('sales')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10)
+      
+      console.log('🔍 TESTE - Total de vendas na tabela (últimas 10):', allSales?.length || 0)
+      console.log('🔍 TESTE - Vendas:', allSales)
+      
       // 1. Buscar vendas do período atual
       const { data: currentSales, error: currentError} = await supabase
         .from('sales')
@@ -116,8 +132,12 @@ export default function AdminDashboard() {
         .lte('created_at', endDateObj.toISOString())
         .order('created_at', { ascending: false })
 
+      console.log('📊 Dashboard - Vendas encontradas:', currentSales?.length || 0)
+      console.log('📦 Dashboard - Exemplo de venda:', currentSales?.[0])
+      console.log('📦 Dashboard - Status das vendas:', currentSales?.map(s => s.status))
+
       if (currentError) {
-        console.error('Erro ao buscar vendas atuais:', currentError)
+        console.error('❌ Erro ao buscar vendas atuais:', currentError)
         setLoading(false)
         setRefreshing(false)
         return
