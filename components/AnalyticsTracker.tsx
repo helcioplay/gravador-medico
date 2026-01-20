@@ -33,7 +33,36 @@ export default function AnalyticsTracker({ city, country, region }: AnalyticsPro
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    trackPageView()
+    // ✅ VERIFICAR CONSENTIMENTO LGPD antes de trackear
+    const checkConsentAndTrack = () => {
+      const consent = localStorage.getItem('cookie_consent')
+      
+      if (consent === 'accepted') {
+        // Usuário aceitou - pode trackear tudo
+        trackPageView()
+      } else if (consent === 'rejected') {
+        // Usuário rejeitou - não trackear analytics
+        console.log('🚫 Analytics desabilitado - usuário rejeitou cookies')
+      } else {
+        // Ainda não decidiu - aguardar
+        console.log('⏳ Aguardando consentimento de cookies...')
+      }
+    }
+
+    // Executar imediatamente
+    checkConsentAndTrack()
+
+    // Também escutar evento de consentimento
+    const handleConsent = () => {
+      console.log('✅ Consentimento recebido - iniciando tracking')
+      trackPageView()
+    }
+
+    window.addEventListener('cookieConsentGiven', handleConsent)
+    
+    return () => {
+      window.removeEventListener('cookieConsentGiven', handleConsent)
+    }
   }, [pathname, searchParams, city, country, region])
 
   /**

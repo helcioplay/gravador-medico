@@ -3,6 +3,7 @@ import "./globals.css"
 import { Suspense } from 'react'
 import { headers } from 'next/headers' // ✅ Importar headers
 import AnalyticsTracker from '@/components/AnalyticsTracker'
+import CookieBanner from '@/components/CookieBanner'
 
 export const metadata: Metadata = {
   title: "Gravador Médico",
@@ -76,6 +77,10 @@ export default async function RootLayout({
         <Suspense fallback={null}>
           <AnalyticsTracker city={city} country={country} region={region} />
         </Suspense>
+        
+        {/* Banner de Consentimento LGPD */}
+        <CookieBanner />
+        
         {children}
       </body>
     </html>
