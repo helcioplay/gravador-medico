@@ -12,7 +12,8 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
-  Package
+  Package,
+  X
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
@@ -41,6 +42,10 @@ export default function SalesPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
+  
+  // Estados para modal de detalhes
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
 
   useEffect(() => {
     loadSales()
@@ -384,7 +389,14 @@ export default function SalesPage() {
                       <StatusBadge status={sale.status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <button className="text-brand-400 hover:text-brand-300 transition-colors">
+                      <button 
+                        onClick={() => {
+                          setSelectedSale(sale)
+                          setDetailsOpen(true)
+                        }}
+                        className="text-brand-400 hover:text-brand-300 transition-colors"
+                        title="Ver detalhes"
+                      >
                         <Eye className="w-5 h-5 inline" />
                       </button>
                     </td>
@@ -400,6 +412,82 @@ export default function SalesPage() {
       <div className="text-center text-sm text-gray-400">
         Mostrando {filteredSales.length} de {sales.length} vendas
       </div>
+
+      {/* Modal de Detalhes */}
+      {detailsOpen && selectedSale && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setDetailsOpen(false)}>
+          <div className="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Detalhes da Venda</h2>
+                <p className="text-gray-400 text-sm mt-1">ID: #{selectedSale.appmax_order_id}</p>
+              </div>
+              <button
+                onClick={() => setDetailsOpen(false)}
+                className="text-gray-400 hover:text-white transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Cliente */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-3">Cliente</h3>
+                <div className="space-y-2">
+                  <p className="text-white"><strong>Nome:</strong> {selectedSale.customer_name}</p>
+                  <p className="text-white"><strong>Email:</strong> {selectedSale.customer_email}</p>
+                  {selectedSale.customer_phone && (
+                    <p className="text-white"><strong>Telefone:</strong> {selectedSale.customer_phone}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Pagamento */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-3">Pagamento</h3>
+                <div className="space-y-2">
+                  <p className="text-white"><strong>Método:</strong> {selectedSale.payment_method?.toUpperCase()}</p>
+                  <p className="text-white flex items-center gap-2"><strong>Status:</strong> <StatusBadge status={selectedSale.status} /></p>
+                  <p className="text-white"><strong>Valor:</strong> R$ {selectedSale.total_amount?.toFixed(2)}</p>
+                  {selectedSale.discount_amount && selectedSale.discount_amount > 0 && (
+                    <p className="text-white"><strong>Desconto:</strong> R$ {selectedSale.discount_amount?.toFixed(2)}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Origem */}
+              {selectedSale.utm_source && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase mb-3">Origem</h3>
+                  <div className="space-y-2">
+                    <p className="text-white"><strong>Source:</strong> {selectedSale.utm_source}</p>
+                    {selectedSale.origin && <p className="text-white"><strong>Origin:</strong> {selectedSale.origin}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Data */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase mb-3">Data</h3>
+                <p className="text-white"><strong>Criado em:</strong> {format(new Date(selectedSale.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gray-800 border-t border-gray-700 p-6">
+              <button
+                onClick={() => setDetailsOpen(false)}
+                className="w-full px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
