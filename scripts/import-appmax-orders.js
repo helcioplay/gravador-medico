@@ -69,9 +69,54 @@ function toNumber(value) {
   return Number.isFinite(num) ? num : 0
 }
 
+function normalizeAppmaxTimestamp(value) {
+  if (!value) return null
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value.toISOString()
+  }
+  const raw = String(value).trim()
+  if (!raw) return null
+
+  // If timezone is provided, trust it.
+  if (/[zZ]$/.test(raw) || /[+-]\d{2}:?\d{2}$/.test(raw)) {
+    const date = new Date(raw)
+    return Number.isNaN(date.getTime()) ? null : date.toISOString()
+  }
+
+  // Appmax usually returns "YYYY-MM-DD HH:mm:ss" in BRT (UTC-3)
+  const withT = raw.includes('T') ? raw : raw.replace(' ', 'T')
+  const withZone = `${withT}-03:00`
+  const date = new Date(withZone)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
+function parseAppmaxDate(value) {
+  const iso = normalizeAppmaxTimestamp(value)
+  if (!iso) return null
+  const date = new Date(iso)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function normalizePaymentMethod(value) {
+  if (!value) return null
+  const normalized = String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+
+  if (normalized.includes('pix')) return 'pix'
+  if (normalized.includes('boleto')) return 'boleto'
+  if (normalized.includes('cartao') || normalized.includes('credit')) return 'credit_card'
+  return normalized
+}
+
 function mapStatus(rawStatus) {
   if (!rawStatus) return 'pending'
-  const status = String(rawStatus).toLowerCase()
+  const status = String(rawStatus)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
   const map = {
     aprovado: 'approved',
     approved: 'approved',
@@ -79,9 +124,13 @@ function mapStatus(rawStatus) {
     paid: 'paid',
     pendente: 'pending',
     pending: 'pending',
+    'nao autorizado': 'refused',
+    payment_not_authorized: 'refused',
     cancelado: 'cancelled',
     cancelled: 'cancelled',
     canceled: 'canceled',
+    expirado: 'expired',
+    expired: 'expired',
     recusado: 'refused',
     refused: 'refused',
     reembolsado: 'refunded',
@@ -93,12 +142,17 @@ function mapStatus(rawStatus) {
 
 function mapFailureReason(rawStatus) {
   if (!rawStatus) return null
-  const status = String(rawStatus).toLowerCase()
+  const status = String(rawStatus)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
   const map = {
     recusado: 'Pagamento recusado',
     refused: 'Pagamento recusado',
     rejected: 'Pagamento recusado',
     failed: 'Pagamento recusado',
+    'nao autorizado': 'Pagamento nao autorizado',
+    payment_not_authorized: 'Pagamento nao autorizado',
     cancelado: 'Pedido cancelado',
     cancelled: 'Pedido cancelado',
     canceled: 'Pedido cancelado',
@@ -109,6 +163,39 @@ function mapFailureReason(rawStatus) {
     chargeback: 'Chargeback'
   }
   return map[status] || null
+}
+
+function resolveStatusAndReason(params) {
+  const baseStatus = mapStatus(params.status)
+  let failureReason = mapFailureReason(params.status)
+  let status = baseStatus
+
+  const payment = normalizePaymentMethod(params.paymentMethod)
+  const pixExpiration = parseAppmaxDate(params.pixExpirationDate)
+  const boletoOverdue = parseAppmaxDate(params.billetDateOverdue)
+  const now = new Date()
+
+  if (
+    payment === 'pix' &&
+    pixExpiration &&
+    pixExpiration <= now &&
+    ['pending', 'cancelled', 'canceled'].includes(status)
+  ) {
+    status = 'expired'
+    failureReason = 'PIX expirado'
+  }
+
+  if (
+    payment === 'boleto' &&
+    boletoOverdue &&
+    boletoOverdue <= now &&
+    ['pending', 'cancelled', 'canceled'].includes(status)
+  ) {
+    status = 'expired'
+    failureReason = 'Boleto vencido'
+  }
+
+  return { status, failureReason }
 }
 
 async function fetchOrderPage(page) {
@@ -280,13 +367,21 @@ async function run() {
           continue
         }
 
-        const status = mapStatus(detailData?.status || order?.status)
-        const failureReason = mapFailureReason(detailData?.status || order?.status)
+        const paymentMethod = normalizePaymentMethod(detailData?.payment_type || detailData?.payment_method)
+        const { status, failureReason } = resolveStatusAndReason({
+          status: detailData?.status || order?.status,
+          paymentMethod,
+          pixExpirationDate: detailData?.pix_expiration_date || detailData?.pix_expired_at,
+          billetDateOverdue: detailData?.billet_date_overdue
+        })
         const totalAmount = toNumber(detailData?.total || detailData?.full_payment_amount || detailData?.total_products)
         const subtotal = toNumber(detailData?.total_products || detailData?.total || totalAmount)
         const discount = toNumber(detailData?.discount || 0)
-        const createdAt = detailData?.created_at || order?.created_at || new Date().toISOString()
-        const updatedAt = detailData?.updated_at || detailData?.updated_at || createdAt
+        const createdAt = normalizeAppmaxTimestamp(detailData?.created_at || order?.created_at) || new Date().toISOString()
+        const updatedAt = normalizeAppmaxTimestamp(detailData?.updated_at) || createdAt
+        const paidAt = normalizeAppmaxTimestamp(detailData?.paid_at)
+        const refundedAt = normalizeAppmaxTimestamp(detailData?.refunded_at)
+        const canceledAt = normalizeAppmaxTimestamp(detailData?.canceled_at)
 
         const customerId = DRY_RUN ? null : await upsertCustomer(customer)
 
@@ -303,11 +398,11 @@ async function run() {
           discount,
           status,
           failure_reason: failureReason,
-          payment_method: detailData?.payment_type || detailData?.payment_method || null,
+          payment_method: paymentMethod,
           installments: detailData?.installments || null,
-          paid_at: detailData?.paid_at || null,
-          refunded_at: detailData?.refunded_at || null,
-          canceled_at: detailData?.canceled_at || null,
+          paid_at: paidAt,
+          refunded_at: refundedAt,
+          canceled_at: canceledAt,
           created_at: createdAt,
           updated_at: updatedAt
         }
