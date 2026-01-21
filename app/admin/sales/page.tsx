@@ -102,9 +102,27 @@ export default function SalesPage() {
     try {
       setRefreshing(true)
       
-      // ✅ CORREÇÃO: Usar strings UTC explícitas
-      const startIso = `${startDate}T00:00:00.000Z`
-      const endIso = `${endDate}T23:59:59.999Z`
+      // ✅ CORREÇÃO: Garantir dia completo em UTC (evita problema de timezone)
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      
+      // Forçar início do dia em UTC (00:00:00.000)
+      const startIso = new Date(Date.UTC(
+        start.getFullYear(), 
+        start.getMonth(), 
+        start.getDate(), 
+        0, 0, 0, 0
+      )).toISOString()
+      
+      // Forçar fim do dia em UTC (23:59:59.999)
+      const endIso = new Date(Date.UTC(
+        end.getFullYear(), 
+        end.getMonth(), 
+        end.getDate(), 
+        23, 59, 59, 999
+      )).toISOString()
+      
+      console.log('🔍 Filtro UTC:', { startIso, endIso })
       
       // ✅ USAR supabaseAdmin para ignorar RLS
       const { data, error } = await supabaseAdmin
