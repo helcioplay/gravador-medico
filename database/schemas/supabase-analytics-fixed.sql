@@ -192,60 +192,68 @@ SELECT
 -- ==========================================
 
 CREATE OR REPLACE VIEW public.analytics_health AS
-WITH current_period AS (
+WITH current_visits AS (
     SELECT
-        COUNT(DISTINCT av.session_id) as unique_visitors,
-        COUNT(DISTINCT ca.id) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')) as sales,
-        COALESCE(SUM(ca.total_amount) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')), 0) as revenue,
-        COALESCE(AVG(ca.total_amount) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')), 0) as aov,
-        COALESCE(AVG(EXTRACT(EPOCH FROM (av.last_seen - av.created_at))), 0) as avg_time_on_site
-    FROM public.analytics_visits av
-    LEFT JOIN public.checkout_attempts ca ON ca.created_at BETWEEN av.created_at AND av.created_at + INTERVAL '24 hours'
-    WHERE av.created_at >= NOW() - INTERVAL '30 days'
+        COUNT(DISTINCT session_id) as unique_visitors,
+        COALESCE(AVG(EXTRACT(EPOCH FROM (last_seen - created_at))), 0) as avg_time_on_site
+    FROM public.analytics_visits
+    WHERE created_at >= NOW() - INTERVAL '30 days'
 ),
-previous_period AS (
+current_sales AS (
     SELECT
-        COUNT(DISTINCT av.session_id) as unique_visitors,
-        COUNT(DISTINCT ca.id) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')) as sales,
-        COALESCE(SUM(ca.total_amount) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')), 0) as revenue,
-        COALESCE(AVG(ca.total_amount) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')), 0) as aov,
-        COALESCE(AVG(EXTRACT(EPOCH FROM (av.last_seen - av.created_at))), 0) as avg_time_on_site
-    FROM public.analytics_visits av
-    LEFT JOIN public.checkout_attempts ca ON ca.created_at BETWEEN av.created_at AND av.created_at + INTERVAL '24 hours'
-    WHERE av.created_at >= NOW() - INTERVAL '60 days' AND av.created_at < NOW() - INTERVAL '30 days'
+        COUNT(*) FILTER (WHERE status IN ('paid', 'approved', 'completed')) as sales,
+        COALESCE(SUM(total_amount) FILTER (WHERE status IN ('paid', 'approved', 'completed')), 0) as revenue,
+        COALESCE(AVG(total_amount) FILTER (WHERE status IN ('paid', 'approved', 'completed')), 0) as aov
+    FROM public.checkout_attempts
+    WHERE created_at >= NOW() - INTERVAL '30 days'
+),
+previous_visits AS (
+    SELECT
+        COUNT(DISTINCT session_id) as unique_visitors,
+        COALESCE(AVG(EXTRACT(EPOCH FROM (last_seen - created_at))), 0) as avg_time_on_site
+    FROM public.analytics_visits
+    WHERE created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days'
+),
+previous_sales AS (
+    SELECT
+        COUNT(*) FILTER (WHERE status IN ('paid', 'approved', 'completed')) as sales,
+        COALESCE(SUM(total_amount) FILTER (WHERE status IN ('paid', 'approved', 'completed')), 0) as revenue,
+        COALESCE(AVG(total_amount) FILTER (WHERE status IN ('paid', 'approved', 'completed')), 0) as aov
+    FROM public.checkout_attempts
+    WHERE created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days'
 )
 SELECT
-    cp.unique_visitors,
-    cp.sales,
-    cp.revenue,
-    ROUND(cp.aov, 2) as average_order_value,
-    ROUND(cp.avg_time_on_site, 0) as avg_time_seconds,
+    cv.unique_visitors,
+    cs.sales,
+    cs.revenue,
+    ROUND(cs.aov, 2) as average_order_value,
+    ROUND(cv.avg_time_on_site, 0) as avg_time_seconds,
     CASE 
-        WHEN cp.unique_visitors > 0 
-        THEN ROUND((cp.sales::numeric / cp.unique_visitors::numeric) * 100, 2)
+        WHEN cv.unique_visitors > 0 
+        THEN ROUND((cs.sales::numeric / cv.unique_visitors::numeric) * 100, 2)
         ELSE 0 
     END as conversion_rate,
     CASE 
-        WHEN pp.unique_visitors > 0 
-        THEN ROUND(((cp.unique_visitors::numeric - pp.unique_visitors::numeric) / pp.unique_visitors::numeric) * 100, 1)
+        WHEN pv.unique_visitors > 0 
+        THEN ROUND(((cv.unique_visitors::numeric - pv.unique_visitors::numeric) / pv.unique_visitors::numeric) * 100, 1)
         ELSE 0 
     END as visitors_change,
     CASE 
-        WHEN pp.revenue > 0 
-        THEN ROUND(((cp.revenue - pp.revenue) / pp.revenue) * 100, 1)
+        WHEN ps.revenue > 0 
+        THEN ROUND(((cs.revenue - ps.revenue) / ps.revenue) * 100, 1)
         ELSE 0 
     END as revenue_change,
     CASE 
-        WHEN pp.aov > 0 
-        THEN ROUND(((cp.aov - pp.aov) / pp.aov) * 100, 1)
+        WHEN ps.aov > 0 
+        THEN ROUND(((cs.aov - ps.aov) / ps.aov) * 100, 1)
         ELSE 0 
     END as aov_change,
     CASE 
-        WHEN pp.avg_time_on_site > 0 
-        THEN ROUND(((cp.avg_time_on_site - pp.avg_time_on_site) / pp.avg_time_on_site) * 100, 1)
+        WHEN pv.avg_time_on_site > 0 
+        THEN ROUND(((cv.avg_time_on_site - pv.avg_time_on_site) / pv.avg_time_on_site) * 100, 1)
         ELSE 0 
     END as time_change
-FROM current_period cp, previous_period pp;
+FROM current_visits cv, current_sales cs, previous_visits pv, previous_sales ps;
 
 -- ==========================================
 -- 6️⃣ VIEW: VISITANTES ONLINE
@@ -289,23 +297,34 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
+    WITH period_visits AS (
+        SELECT
+            COUNT(DISTINCT session_id) as unique_visitors
+        FROM public.analytics_visits
+        WHERE created_at BETWEEN start_date AND end_date
+    ),
+    period_sales AS (
+        SELECT
+            COUNT(*) FILTER (WHERE status IN ('paid', 'approved', 'completed')) as total_sales,
+            COALESCE(SUM(total_amount) FILTER (WHERE status IN ('paid', 'approved', 'completed')), 0) as total_revenue
+        FROM public.checkout_attempts
+        WHERE created_at BETWEEN start_date AND end_date
+    )
     SELECT
-        COUNT(DISTINCT av.session_id),
-        COUNT(DISTINCT ca.id) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')),
-        COALESCE(SUM(ca.total_amount) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')), 0),
+        pv.unique_visitors,
+        ps.total_sales,
+        ps.total_revenue,
         CASE 
-            WHEN COUNT(DISTINCT av.session_id) > 0 
-            THEN ROUND((COUNT(DISTINCT ca.id) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed'))::numeric / COUNT(DISTINCT av.session_id)::numeric) * 100, 2)
+            WHEN pv.unique_visitors > 0 
+            THEN ROUND((ps.total_sales::numeric / pv.unique_visitors::numeric) * 100, 2)
             ELSE 0 
         END,
         CASE 
-            WHEN COUNT(DISTINCT ca.id) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')) > 0 
-            THEN ROUND(COALESCE(SUM(ca.total_amount) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')), 0) / COUNT(DISTINCT ca.id) FILTER (WHERE ca.status IN ('paid', 'approved', 'completed')), 2)
+            WHEN ps.total_sales > 0 
+            THEN ROUND(ps.total_revenue / ps.total_sales, 2)
             ELSE 0 
         END
-    FROM public.analytics_visits av
-    LEFT JOIN public.checkout_attempts ca ON ca.created_at BETWEEN av.created_at AND av.created_at + INTERVAL '24 hours'
-    WHERE av.created_at BETWEEN start_date AND end_date;
+    FROM period_visits pv, period_sales ps;
 END;
 $$;
 

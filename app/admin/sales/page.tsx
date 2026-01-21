@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase } from '@/lib/supabase'
 import { formatRelativeTime, formatBRDateTime, getUTCDayRange } from '@/lib/date-utils'
 import { refundOrder } from '@/actions/refund-order'
 import {
@@ -71,27 +70,24 @@ export default function SalesPage() {
       setLoading(true)
       const { start, end } = getUTCDayRange(new Date(endDate))
       const { start: rangeStart } = getUTCDayRange(new Date(startDate))
-      
-      let query = supabase
-        .from('sales')
-        .select('*')
-        .gte('created_at', rangeStart)
-        .lte('created_at', end)
-        .order('created_at', { ascending: false })
-      
-      const { data, error } = await query
-      
-      if (error) {
-        const { data: fallbackData } = await supabase
-          .from('sales')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50)
-        setSales(fallbackData || [])
+
+      const params = new URLSearchParams({
+        start: rangeStart,
+        end
+      })
+
+      const response = await fetch(`/api/admin/sales?${params.toString()}`, {
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        console.error('Erro ao carregar vendas:', response.status)
+        setSales([])
         return
       }
-      
-      setSales(data || [])
+
+      const result = await response.json()
+      setSales(result.sales || [])
     } finally {
       setLoading(false)
     }
