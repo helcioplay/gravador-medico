@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "backfill:checkout-attempts": "node scripts/backfill-checkout-attempts.js",
-    "import:appmax-orders": "node scripts/import-appmax-orders.js"
+    "import:appmax-orders": "node scripts/import-appmax-orders.js",
+    "sync:whatsapp": "node scripts/sync-whatsapp-history.js",
+    "test:whatsapp": "bash scripts/test-whatsapp-setup.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",
