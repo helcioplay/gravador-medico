@@ -1,198 +1,588 @@
-'use client';'use client';"use client"
+'use client''use client';'use client';'use client';"use client"
 
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 
-import { Search, Crown, Zap, Moon, AlertTriangle, Users, TrendingUp, DollarSign } from 'lucide-react';
+import { Search, Crown, Zap, Moon, AlertTriangle, Users, TrendingUp, DollarSign } from 'lucide-react'
 
-import { Input } from '@/components/ui/input';import React, { useState, useEffect } from 'react';import { useState, useEffect } from 'react'
+import { Input } from '@/components/ui/input'import React, { useState, useEffect } from 'react';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge'
 
-import { Button } from '@/components/ui/button';import { Search, Crown, Zap, Moon, AlertTriangle, Users, TrendingUp, DollarSign } from 'lucide-react';import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'import { Search, Crown, Zap, Moon, AlertTriangle, Users, TrendingUp, DollarSign } from 'lucide-react';
 
-import {
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-  Table,import { Input } from '@/components/ui/input';import { 
+import { Card } from '@/components/ui/card'import { Input } from '@/components/ui/input';import React, { useState, useEffect } from 'react';
 
-  TableBody,
+import { Skeleton } from '@/components/ui/skeleton'
 
-  TableCell,import { Badge } from '@/components/ui/badge';  Users, Search, Mail, Phone, Calendar, DollarSign, 
+import CustomerDrawer from '@/components/CustomerDrawer'import { Badge } from '@/components/ui/badge';
 
-  TableHead,
+import type { Customer } from '@/app/api/admin/customers/route'
 
-  TableHeader,import { Button } from '@/components/ui/button';  ShoppingBag, Filter, Download, RefreshCw, Eye, TrendingUp 
+import { Button } from '@/components/ui/button';import { Search, Crown, Zap, Moon, AlertTriangle, Users, TrendingUp, DollarSign } from 'lucide-react';
 
-  TableRow,
+function useDebounce<T>(value: T, delay: number): T {
 
-} from '@/components/ui/table';import {} from 'lucide-react'
-
-import { Card } from '@/components/ui/card';
-
-import { Skeleton } from '@/components/ui/skeleton';  Table,import { supabase } from '@/lib/supabase'
-
-import CustomerDrawer from '@/components/CustomerDrawer';
-
-import { Customer } from '@/app/api/admin/customers/route';  TableBody,import { format, subDays } from 'date-fns'
-
-
-
-function useDebounce<T>(value: T, delay: number): T {  TableCell,import { ptBR } from 'date-fns/locale'
-
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  TableHead,import { fetchCustomersWithMetrics } from '@/lib/dashboard-queries'
+  const [debouncedValue, setDebouncedValue] = useState(value)import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
   useEffect(() => {
 
-    const handler = setTimeout(() => {  TableHeader,
+    const handler = setTimeout(() => setDebouncedValue(value), delay)import { Card } from '@/components/ui/card';import { Input } from '@/components/ui/input';import React, { useState, useEffect } from 'react';import { useState, useEffect } from 'react'
 
-      setDebouncedValue(value);
+    return () => clearTimeout(handler)
 
-    }, delay);  TableRow,interface Customer {
+  }, [value, delay])import { Skeleton } from '@/components/ui/skeleton';
 
+  return debouncedValue
 
-
-    return () => {} from '@/components/ui/table';  customer_id: string
-
-      clearTimeout(handler);
-
-    };import { Card } from '@/components/ui/card';  name: string
-
-  }, [value, delay]);
-
-import { Skeleton } from '@/components/ui/skeleton';  email: string
-
-  return debouncedValue;
-
-}import CustomerDrawer from '@/components/CustomerDrawer';  phone: string | null
+}import CustomerDrawer from '@/components/CustomerDrawer';import { Badge } from '@/components/ui/badge';
 
 
 
-function getInitials(name: string): string {import { Customer } from '@/app/api/admin/customers/route';  segment: string | null
+function getInitials(name: string): string {import type { Customer } from '@/app/api/admin/customers/route';
 
-  if (!name) return '??';
+  if (!name) return '??'
 
-  const parts = name.trim().split(' ');  status: string
+  const parts = name.trim().split(' ')import { Button } from '@/components/ui/button';import { Search, Crown, Zap, Moon, AlertTriangle, Users, TrendingUp, DollarSign } from 'lucide-react';import { motion } from 'framer-motion'
 
-  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
 
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();// Debounce hook  total_orders: number
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()function useDebounce<T>(value: T, delay: number): T {
 
 }
 
-function useDebounce<T>(value: T, delay: number): T {  total_spent: number
+  const [debouncedValue, setDebouncedValue] = useState(value);import {
 
 function getColorFromString(str: string): string {
 
-  let hash = 0;  const [debouncedValue, setDebouncedValue] = useState(value);  average_order_value: number
+  let hash = 0  useEffect(() => {
 
   for (let i = 0; i < str.length; i++) {
 
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);  last_purchase_at: string
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)    const handler = setTimeout(() => setDebouncedValue(value), delay);  Table,import { Input } from '@/components/ui/input';import { 
 
   }
 
-  const hue = hash % 360;  useEffect(() => {  first_purchase_at: string
+  return `hsl(${hash % 360}, 65%, 55%)`    return () => clearTimeout(handler);
 
-  return `hsl(${hue}, 65%, 55%)`;
+}
 
-}    const handler = setTimeout(() => {}
+  }, [value, delay]);  TableBody,
+
+function CustomerAvatar({ name, email }: { name: string; email: string }) {
+
+  return (  return debouncedValue;
+
+    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ backgroundColor: getColorFromString(email) }}>
+
+      {getInitials(name)}}  TableCell,import { Badge } from '@/components/ui/badge';  Users, Search, Mail, Phone, Calendar, DollarSign, 
+
+    </div>
+
+  )
+
+}
+
+function getInitials(name: string): string {  TableHead,
+
+function SegmentBadge({ segment }: { segment: Customer['segment'] }) {
+
+  const config = {  if (!name) return '??';
+
+    VIP: { color: 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white', label: '👑 VIP' },
+
+    New: { color: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white', label: '🔥 Novo' },  const parts = name.trim().split(' ');  TableHeader,import { Button } from '@/components/ui/button';  ShoppingBag, Filter, Download, RefreshCw, Eye, TrendingUp 
+
+    Dormant: { color: 'bg-gradient-to-r from-gray-500 to-slate-600 text-white', label: '💤 Ausente' },
+
+    'Churn Risk': { color: 'bg-gradient-to-r from-orange-500 to-red-600 text-white', label: '⚠️ Churn' },  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+
+    Regular: { color: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white', label: 'Regular' },
+
+  }  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();  TableRow,
+
+  const { color, label } = config[segment] || config.Regular
+
+  return <Badge className={`${color} border-0 font-semibold px-3 py-1`}>{label}</Badge>}
+
+}
+
+} from '@/components/ui/table';import {} from 'lucide-react'
+
+const formatCurrency = (value: number | null) => {
+
+  if (!value) return 'R$ 0,00'function getColorFromString(str: string): string {
+
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+
+}  let hash = 0;import { Card } from '@/components/ui/card';
 
 
 
-function CustomerAvatar({ name, email }: { name: string; email: string }) {      setDebouncedValue(value);
+function getRelativeTime(date: string): string {  for (let i = 0; i < str.length; i++) {
 
-  const initials = getInitials(name);
+  const diffDays = Math.floor((Date.now() - new Date(date).getTime()) / 86400000)
 
-  const color = getColorFromString(email);    }, delay);export default function CustomersPage() {
+  if (diffDays === 0) return 'Hoje'    hash = str.charCodeAt(i) + ((hash << 5) - hash);import { Skeleton } from '@/components/ui/skeleton';  Table,import { supabase } from '@/lib/supabase'
 
-  
+  if (diffDays === 1) return 'Ontem'
 
-  return (  const [customers, setCustomers] = useState<Customer[]>([])
+  if (diffDays < 7) return `${diffDays} dias atrás`  }
 
-    <div
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} semanas atrás`
 
-      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"    return () => {  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([])
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} meses atrás`  return `hsl(${hash % 360}, 65%, 55%)`;import CustomerDrawer from '@/components/CustomerDrawer';
 
-      style={{ backgroundColor: color }}
+  return `${Math.floor(diffDays / 365)} anos atrás`
 
-    >      clearTimeout(handler);  const [loading, setLoading] = useState(true)
-
-      {initials}
-
-    </div>    };  const [refreshing, setRefreshing] = useState(false)
-
-  );
-
-}  }, [value, delay]);  const [searchTerm, setSearchTerm] = useState('')
+}}
 
 
 
-function SegmentBadge({ segment }: { segment: Customer['segment'] }) {  const [sortBy, setSortBy] = useState<'total_spent' | 'total_orders' | 'last_purchase_at'>('total_spent')
+export default function CustomersPage() {import { Customer } from '@/app/api/admin/customers/route';  TableBody,import { format, subDays } from 'date-fns'
 
-  const config = {
+  const [customers, setCustomers] = useState<Customer[]>([])
 
-    VIP: { icon: Crown, color: 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white', label: '👑 VIP' },  return debouncedValue;  const [filterSegment, setFilterSegment] = useState<'all' | 'vip' | 'regular' | 'new'>('all')
+  const [loading, setLoading] = useState(true)function CustomerAvatar({ name, email }: { name: string; email: string }) {
 
-    New: { icon: Zap, color: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white', label: '🔥 Novo' },
+  const [search, setSearch] = useState('')
 
-    Dormant: { icon: Moon, color: 'bg-gradient-to-r from-gray-500 to-slate-600 text-white', label: '💤 Ausente' },}  
+  const [selectedSegment, setSelectedSegment] = useState('')  return (
 
-    'Churn Risk': { icon: AlertTriangle, color: 'bg-gradient-to-r from-orange-500 to-red-600 text-white', label: '⚠️ Churn' },
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
-    Regular: { icon: Users, color: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white', label: 'Regular' },  // Filtros de data
+  const [drawerOpen, setDrawerOpen] = useState(false)    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0" style={{ backgroundColor: getColorFromString(email) }}>
 
-  };
+  const [page, setPage] = useState(1)
 
-  // Função para gerar avatar com iniciais  const today = new Date()
+  const [totalPages, setTotalPages] = useState(1)      {getInitials(name)}function useDebounce<T>(value: T, delay: number): T {  TableCell,import { ptBR } from 'date-fns/locale'
 
-  const { color, label } = config[segment] || config.Regular;
+  const [stats, setStats] = useState({ total_customers: 0, vip_count: 0, dormant_count: 0, total_ltv: 0, avg_ltv: 0 })
 
-  function getInitials(name: string): string {  const thirtyDaysAgo = subDays(today, 30)
+    </div>
+
+  const debouncedSearch = useDebounce(search, 500)
+
+  );  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  const fetchCustomers = async () => {
+
+    setLoading(true)}
+
+    try {
+
+      const params = new URLSearchParams({ page: page.toString(), limit: '20', search: debouncedSearch, segment: selectedSegment, sortBy: 'ltv', sortOrder: 'desc' })  TableHead,import { fetchCustomersWithMetrics } from '@/lib/dashboard-queries'
+
+      const response = await fetch(`/api/admin/customers?${params}`)
+
+      const data = await response.json()function SegmentBadge({ segment }: { segment: Customer['segment'] }) {
+
+      setCustomers(data.customers || [])
+
+      setTotalPages(data.pagination?.totalPages || 1)  const config = {  useEffect(() => {
+
+      setStats(data.stats || stats)
+
+    } catch (error) {    VIP: { color: 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white', label: '👑 VIP' },
+
+      console.error('Error:', error)
+
+    } finally {    New: { color: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white', label: '🔥 Novo' },    const handler = setTimeout(() => {  TableHeader,
+
+      setLoading(false)
+
+    }    Dormant: { color: 'bg-gradient-to-r from-gray-500 to-slate-600 text-white', label: '💤 Ausente' },
+
+  }
+
+    'Churn Risk': { color: 'bg-gradient-to-r from-orange-500 to-red-600 text-white', label: '⚠️ Churn' },      setDebouncedValue(value);
+
+  useEffect(() => { fetchCustomers() }, [debouncedSearch, selectedSegment, page])
+
+    Regular: { color: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white', label: 'Regular' },
 
   return (
 
-    <Badge className={`${color} border-0 font-semibold px-3 py-1`}>  if (!name) return '??';  const [startDate, setStartDate] = useState(format(thirtyDaysAgo, 'yyyy-MM-dd'))
+    <div className="min-h-screen bg-[#0A0A0A] p-6 space-y-6">  };    }, delay);  TableRow,interface Customer {
 
-      {label}
+      <div>
 
-    </Badge>  const parts = name.trim().split(' ');  const [endDate, setEndDate] = useState(format(today, 'yyyy-MM-dd'))
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">  const { color, label } = config[segment] || config.Regular;
+
+          <Users className="w-8 h-8 text-purple-400" />Clientes
+
+        </h1>  return <Badge className={`${color} border-0 font-semibold px-3 py-1`}>{label}</Badge>;
+
+        <p className="text-gray-400 mt-1">Mini-CRM: Identifique VIPs, recupere Churns e acompanhe LTV</p>
+
+      </div>}
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+        <Card className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border-purple-700/30 p-6">    return () => {} from '@/components/ui/table';  customer_id: string
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">Total de Clientes</p><p className="text-3xl font-bold text-white mt-1">{stats.total_customers}</p></div>const formatCurrency = (value: number | null) => {
+
+            <Users className="w-10 h-10 text-purple-400" />
+
+          </div>  if (!value) return 'R$ 0,00';      clearTimeout(handler);
+
+        </Card>
+
+        <Card className="bg-gradient-to-br from-yellow-900/30 to-amber-800/20 border-yellow-700/30 p-6">  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">VIPs</p><p className="text-3xl font-bold text-white mt-1">{stats.vip_count}</p></div>};    };import { Card } from '@/components/ui/card';  name: string
+
+            <Crown className="w-10 h-10 text-yellow-400" />
+
+          </div>
+
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-900/30 to-emerald-800/20 border-green-700/30 p-6">function getRelativeTime(date: string): string {  }, [value, delay]);
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">LTV Total</p><p className="text-2xl font-bold text-white mt-1">{formatCurrency(stats.total_ltv)}</p></div>  const diffDays = Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
+
+            <DollarSign className="w-10 h-10 text-green-400" />
+
+          </div>  if (diffDays === 0) return 'Hoje';import { Skeleton } from '@/components/ui/skeleton';  email: string
+
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-900/30 to-indigo-800/20 border-blue-700/30 p-6">  if (diffDays === 1) return 'Ontem';
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">LTV Médio</p><p className="text-2xl font-bold text-white mt-1">{formatCurrency(stats.avg_ltv)}</p></div>  if (diffDays < 7) return `${diffDays} dias atrás`;  return debouncedValue;
+
+            <TrendingUp className="w-10 h-10 text-blue-400" />
+
+          </div>  if (diffDays < 30) return `${Math.floor(diffDays / 7)} semanas atrás`;
+
+        </Card>
+
+      </div>  if (diffDays < 365) return `${Math.floor(diffDays / 30)} meses atrás`;}import CustomerDrawer from '@/components/CustomerDrawer';  phone: string | null
+
+      <Card className="bg-[#111111] border-gray-800 p-6">
+
+        <div className="flex flex-col md:flex-row gap-4">  return `${Math.floor(diffDays / 365)} anos atrás`;
+
+          <div className="flex-1 relative">
+
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />}
+
+            <Input placeholder="Buscar por nome ou email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-[#1A1A1A] border-gray-700 text-white placeholder:text-gray-500" />
+
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+
+            {['', 'VIP', 'New', 'Dormant', 'Churn Risk', 'Regular'].map((seg) => (export default function CustomersPage() {function getInitials(name: string): string {import { Customer } from '@/app/api/admin/customers/route';  segment: string | null
+
+              <Button key={seg || 'all'} variant={selectedSegment === seg ? 'default' : 'outline'} onClick={() => setSelectedSegment(seg)} className={selectedSegment === seg ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-[#1A1A1A] border-gray-700 text-gray-300 hover:bg-[#222222]'}>
+
+                {seg || 'Todos'}  const [customers, setCustomers] = useState<Customer[]>([]);
+
+              </Button>
+
+            ))}  const [loading, setLoading] = useState(true);  if (!name) return '??';
+
+          </div>
+
+        </div>  const [search, setSearch] = useState('');
+
+      </Card>
+
+      <Card className="bg-[#111111] border-gray-800">  const [selectedSegment, setSelectedSegment] = useState('');  const parts = name.trim().split(' ');  status: string
+
+        <Table>
+
+          <TableHeader>  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+            <TableRow className="border-gray-800 hover:bg-transparent">
+
+              <TableHead className="text-gray-400 font-semibold">Cliente</TableHead>  const [drawerOpen, setDrawerOpen] = useState(false);  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+
+              <TableHead className="text-gray-400 font-semibold">Segmento</TableHead>
+
+              <TableHead className="text-gray-400 font-semibold text-right">LTV</TableHead>  const [page, setPage] = useState(1);
+
+              <TableHead className="text-gray-400 font-semibold text-right">Pedidos</TableHead>
+
+              <TableHead className="text-gray-400 font-semibold text-right">Ticket Médio</TableHead>  const [totalPages, setTotalPages] = useState(1);  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();// Debounce hook  total_orders: number
+
+              <TableHead className="text-gray-400 font-semibold">Última Compra</TableHead>
+
+              <TableHead className="text-gray-400 font-semibold text-center">Score</TableHead>  const [stats, setStats] = useState({ total_customers: 0, vip_count: 0, dormant_count: 0, total_ltv: 0, avg_ltv: 0 });
+
+            </TableRow>
+
+          </TableHeader>}
+
+          <TableBody>
+
+            {loading ? Array.from({ length: 5 }).map((_, i) => (  const debouncedSearch = useDebounce(search, 500);
+
+              <TableRow key={i} className="border-gray-800"><TableCell colSpan={7}><Skeleton className="h-12 w-full bg-gray-800" /></TableCell></TableRow>
+
+            )) : customers.length === 0 ? (function useDebounce<T>(value: T, delay: number): T {  total_spent: number
+
+              <TableRow className="border-gray-800"><TableCell colSpan={7} className="text-center text-gray-500 py-12">Nenhum cliente encontrado</TableCell></TableRow>
+
+            ) : customers.map((c) => (  const fetchCustomers = async () => {
+
+              <TableRow key={c.email} onClick={() => { setSelectedCustomer(c); setDrawerOpen(true) }} className="border-gray-800 hover:bg-[#1A1A1A] cursor-pointer transition-colors">
+
+                <TableCell><div className="flex items-center gap-3"><CustomerAvatar name={c.name} email={c.email} /><div><p className="font-medium text-white">{c.name || 'Sem nome'}</p><p className="text-sm text-gray-500">{c.email}</p></div></div></TableCell>    setLoading(true);function getColorFromString(str: string): string {
+
+                <TableCell><SegmentBadge segment={c.segment} /></TableCell>
+
+                <TableCell className="text-right"><span className="font-bold text-green-400">{formatCurrency(c.ltv)}</span></TableCell>    try {
+
+                <TableCell className="text-right text-white">{c.paid_orders}/{c.total_orders}</TableCell>
+
+                <TableCell className="text-right text-gray-300">{formatCurrency(c.aov)}</TableCell>      const params = new URLSearchParams({ page: page.toString(), limit: '20', search: debouncedSearch, segment: selectedSegment, sortBy: 'ltv', sortOrder: 'desc' });  let hash = 0;  const [debouncedValue, setDebouncedValue] = useState(value);  average_order_value: number
+
+                <TableCell><span className="text-gray-400 text-sm">{c.last_purchase ? getRelativeTime(c.last_purchase) : 'Nunca'}</span></TableCell>
+
+                <TableCell className="text-center"><div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600"><span className="text-white font-bold text-sm">{c.engagement_score}</span></div></TableCell>      const response = await fetch(`/api/admin/customers?${params}`);
+
+              </TableRow>
+
+            ))}      const data = await response.json();  for (let i = 0; i < str.length; i++) {
+
+          </TableBody>
+
+        </Table>      setCustomers(data.customers || []);
+
+        {totalPages > 1 && (
+
+          <div className="flex items-center justify-between p-4 border-t border-gray-800">      setTotalPages(data.pagination?.totalPages || 1);    hash = str.charCodeAt(i) + ((hash << 5) - hash);  last_purchase_at: string
+
+            <Button variant="outline" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="bg-[#1A1A1A] border-gray-700 text-white hover:bg-[#222222] disabled:opacity-50">Anterior</Button>
+
+            <span className="text-gray-400">Página {page} de {totalPages}</span>      setStats(data.stats || stats);
+
+            <Button variant="outline" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="bg-[#1A1A1A] border-gray-700 text-white hover:bg-[#222222] disabled:opacity-50">Próxima</Button>
+
+          </div>    } catch (error) {  }
+
+        )}
+
+      </Card>      console.error('Error:', error);
+
+      {selectedCustomer && <CustomerDrawer customer={selectedCustomer} open={drawerOpen} onClose={() => setDrawerOpen(false)} />}
+
+    </div>    } finally {  const hue = hash % 360;  useEffect(() => {  first_purchase_at: string
+
+  )
+
+}      setLoading(false);
+
+
+    }  return `hsl(${hue}, 65%, 55%)`;
+
+  };
+
+}    const handler = setTimeout(() => {}
+
+  useEffect(() => { fetchCustomers(); }, [debouncedSearch, selectedSegment, page]);
+
+
+
+  return (
+
+    <div className="min-h-screen bg-[#0A0A0A] p-6 space-y-6">function CustomerAvatar({ name, email }: { name: string; email: string }) {      setDebouncedValue(value);
+
+      <div>
+
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">  const initials = getInitials(name);
+
+          <Users className="w-8 h-8 text-purple-400" />Clientes
+
+        </h1>  const color = getColorFromString(email);    }, delay);export default function CustomersPage() {
+
+        <p className="text-gray-400 mt-1">Mini-CRM: Identifique VIPs, recupere Churns e acompanhe LTV</p>
+
+      </div>  
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+        <Card className="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border-purple-700/30 p-6">  return (  const [customers, setCustomers] = useState<Customer[]>([])
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">Total de Clientes</p><p className="text-3xl font-bold text-white mt-1">{stats.total_customers}</p></div>    <div
+
+            <Users className="w-10 h-10 text-purple-400" />
+
+          </div>      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"    return () => {  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([])
+
+        </Card>
+
+        <Card className="bg-gradient-to-br from-yellow-900/30 to-amber-800/20 border-yellow-700/30 p-6">      style={{ backgroundColor: color }}
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">VIPs</p><p className="text-3xl font-bold text-white mt-1">{stats.vip_count}</p></div>    >      clearTimeout(handler);  const [loading, setLoading] = useState(true)
+
+            <Crown className="w-10 h-10 text-yellow-400" />
+
+          </div>      {initials}
+
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-900/30 to-emerald-800/20 border-green-700/30 p-6">    </div>    };  const [refreshing, setRefreshing] = useState(false)
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">LTV Total</p><p className="text-2xl font-bold text-white mt-1">{formatCurrency(stats.total_ltv)}</p></div>  );
+
+            <DollarSign className="w-10 h-10 text-green-400" />
+
+          </div>}  }, [value, delay]);  const [searchTerm, setSearchTerm] = useState('')
+
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-900/30 to-indigo-800/20 border-blue-700/30 p-6">
+
+          <div className="flex items-center justify-between">
+
+            <div><p className="text-gray-400 text-sm font-medium">LTV Médio</p><p className="text-2xl font-bold text-white mt-1">{formatCurrency(stats.avg_ltv)}</p></div>function SegmentBadge({ segment }: { segment: Customer['segment'] }) {  const [sortBy, setSortBy] = useState<'total_spent' | 'total_orders' | 'last_purchase_at'>('total_spent')
+
+            <TrendingUp className="w-10 h-10 text-blue-400" />
+
+          </div>  const config = {
+
+        </Card>
+
+      </div>    VIP: { icon: Crown, color: 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white', label: '👑 VIP' },  return debouncedValue;  const [filterSegment, setFilterSegment] = useState<'all' | 'vip' | 'regular' | 'new'>('all')
+
+      <Card className="bg-[#111111] border-gray-800 p-6">
+
+        <div className="flex flex-col md:flex-row gap-4">    New: { icon: Zap, color: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white', label: '🔥 Novo' },
+
+          <div className="flex-1 relative">
+
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />    Dormant: { icon: Moon, color: 'bg-gradient-to-r from-gray-500 to-slate-600 text-white', label: '💤 Ausente' },}  
+
+            <Input placeholder="Buscar por nome ou email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-[#1A1A1A] border-gray-700 text-white placeholder:text-gray-500" />
+
+          </div>    'Churn Risk': { icon: AlertTriangle, color: 'bg-gradient-to-r from-orange-500 to-red-600 text-white', label: '⚠️ Churn' },
+
+          <div className="flex gap-2 flex-wrap">
+
+            {['', 'VIP', 'New', 'Dormant', 'Churn Risk', 'Regular'].map((seg) => (    Regular: { icon: Users, color: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white', label: 'Regular' },  // Filtros de data
+
+              <Button key={seg || 'all'} variant={selectedSegment === seg ? 'default' : 'outline'} onClick={() => setSelectedSegment(seg)} className={selectedSegment === seg ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-[#1A1A1A] border-gray-700 text-gray-300 hover:bg-[#222222]'}>
+
+                {seg || 'Todos'}  };
+
+              </Button>
+
+            ))}  // Função para gerar avatar com iniciais  const today = new Date()
+
+          </div>
+
+        </div>  const { color, label } = config[segment] || config.Regular;
+
+      </Card>
+
+      <Card className="bg-[#111111] border-gray-800">  function getInitials(name: string): string {  const thirtyDaysAgo = subDays(today, 30)
+
+        <Table>
+
+          <TableHeader>  return (
+
+            <TableRow className="border-gray-800 hover:bg-transparent">
+
+              <TableHead className="text-gray-400 font-semibold">Cliente</TableHead>    <Badge className={`${color} border-0 font-semibold px-3 py-1`}>  if (!name) return '??';  const [startDate, setStartDate] = useState(format(thirtyDaysAgo, 'yyyy-MM-dd'))
+
+              <TableHead className="text-gray-400 font-semibold">Segmento</TableHead>
+
+              <TableHead className="text-gray-400 font-semibold text-right">LTV</TableHead>      {label}
+
+              <TableHead className="text-gray-400 font-semibold text-right">Pedidos</TableHead>
+
+              <TableHead className="text-gray-400 font-semibold text-right">Ticket Médio</TableHead>    </Badge>  const parts = name.trim().split(' ');  const [endDate, setEndDate] = useState(format(today, 'yyyy-MM-dd'))
+
+              <TableHead className="text-gray-400 font-semibold">Última Compra</TableHead>
+
+              <TableHead className="text-gray-400 font-semibold text-center">Score</TableHead>  );
+
+            </TableRow>
+
+          </TableHeader>}  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();  const [period, setPeriod] = useState(30)
+
+          <TableBody>
+
+            {loading ? Array.from({ length: 5 }).map((_, i) => (
+
+              <TableRow key={i} className="border-gray-800"><TableCell colSpan={7}><Skeleton className="h-12 w-full bg-gray-800" /></TableCell></TableRow>
+
+            )) : customers.length === 0 ? (const formatCurrency = (value: number | null) => {  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+
+              <TableRow className="border-gray-800"><TableCell colSpan={7} className="text-center text-gray-500 py-12">Nenhum cliente encontrado</TableCell></TableRow>
+
+            ) : customers.map((c) => (  if (!value) return 'R$ 0,00';
+
+              <TableRow key={c.email} onClick={() => { setSelectedCustomer(c); setDrawerOpen(true); }} className="border-gray-800 hover:bg-[#1A1A1A] cursor-pointer transition-colors">
+
+                <TableCell><div className="flex items-center gap-3"><CustomerAvatar name={c.name} email={c.email} /><div><p className="font-medium text-white">{c.name || 'Sem nome'}</p><p className="text-sm text-gray-500">{c.email}</p></div></div></TableCell>  return new Intl.NumberFormat('pt-BR', {}  // Função para definir período rápido
+
+                <TableCell><SegmentBadge segment={c.segment} /></TableCell>
+
+                <TableCell className="text-right"><span className="font-bold text-green-400">{formatCurrency(c.ltv)}</span></TableCell>    style: 'currency',
+
+                <TableCell className="text-right text-white">{c.paid_orders}/{c.total_orders}</TableCell>
+
+                <TableCell className="text-right text-gray-300">{formatCurrency(c.aov)}</TableCell>    currency: 'BRL',  const setQuickPeriod = (days: number) => {
+
+                <TableCell><span className="text-gray-400 text-sm">{c.last_purchase ? getRelativeTime(c.last_purchase) : 'Nunca'}</span></TableCell>
+
+                <TableCell className="text-center"><div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600"><span className="text-white font-bold text-sm">{c.engagement_score}</span></div></TableCell>  }).format(value);
+
+              </TableRow>
+
+            ))}};// Função para gerar cor baseada em hash    setPeriod(days)
+
+          </TableBody>
+
+        </Table>
+
+        {totalPages > 1 && (
+
+          <div className="flex items-center justify-between p-4 border-t border-gray-800">function getRelativeTime(date: string): string {function getColorFromString(str: string): string {    const end = new Date()
+
+            <Button variant="outline" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="bg-[#1A1A1A] border-gray-700 text-white hover:bg-[#222222] disabled:opacity-50">Anterior</Button>
+
+            <span className="text-gray-400">Página {page} de {totalPages}</span>  const now = new Date();
+
+            <Button variant="outline" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="bg-[#1A1A1A] border-gray-700 text-white hover:bg-[#222222] disabled:opacity-50">Próxima</Button>
+
+          </div>  const past = new Date(date);  let hash = 0;    const start = subDays(end, days)
+
+        )}
+
+      </Card>  const diffMs = now.getTime() - past.getTime();
+
+      {selectedCustomer && <CustomerDrawer customer={selectedCustomer} open={drawerOpen} onClose={() => setDrawerOpen(false)} />}
+
+    </div>  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));  for (let i = 0; i < str.length; i++) {    setStartDate(format(start, 'yyyy-MM-dd'))
 
   );
 
-}  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();  const [period, setPeriod] = useState(30)
+}  
 
-
-
-const formatCurrency = (value: number | null) => {  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-
-  if (!value) return 'R$ 0,00';
-
-  return new Intl.NumberFormat('pt-BR', {}  // Função para definir período rápido
-
-    style: 'currency',
-
-    currency: 'BRL',  const setQuickPeriod = (days: number) => {
-
-  }).format(value);
-
-};// Função para gerar cor baseada em hash    setPeriod(days)
-
-
-
-function getRelativeTime(date: string): string {function getColorFromString(str: string): string {    const end = new Date()
-
-  const now = new Date();
-
-  const past = new Date(date);  let hash = 0;    const start = subDays(end, days)
-
-  const diffMs = now.getTime() - past.getTime();
-
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));  for (let i = 0; i < str.length; i++) {    setStartDate(format(start, 'yyyy-MM-dd'))
-
-  
 
   if (diffDays === 0) return 'Hoje';    hash = str.charCodeAt(i) + ((hash << 5) - hash);    setEndDate(format(end, 'yyyy-MM-dd'))
 
