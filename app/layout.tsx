@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { headers } from 'next/headers' // ✅ Importar headers
 import AnalyticsTracker from '@/components/AnalyticsTracker'
 import CookieBanner from '@/components/CookieBanner'
+import { ToastProvider } from '@/components/ui/toast' // ✅ Provider para notificações
 
 export const metadata: Metadata = {
   title: "Gravador Médico",
@@ -80,15 +81,17 @@ export default async function RootLayout({
         {/* End Meta Pixel Code */}
       </head>
       <body className="bg-white">
-        {/* Analytics Tracker - rastreia visitas automaticamente */}
-        <Suspense fallback={null}>
-          <AnalyticsTracker city={city} country={country} region={region} />
-        </Suspense>
-        
-        {/* Banner de Consentimento LGPD */}
-        <CookieBanner />
-        
-        {children}
+        <ToastProvider>
+          {/* Analytics Tracker - rastreia visitas automaticamente */}
+          <Suspense fallback={null}>
+            <AnalyticsTracker city={city} country={country} region={region} />
+          </Suspense>
+          
+          {/* Banner de Consentimento LGPD */}
+          <CookieBanner />
+          
+          {children}
+        </ToastProvider>
       </body>
     </html>
   )
