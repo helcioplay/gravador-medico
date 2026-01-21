@@ -15,7 +15,7 @@ import {
   Package,
   X
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -70,7 +70,7 @@ export default function SalesPage() {
     loadSales()
     
     // 🔴 REALTIME: Escutar novas vendas
-    const channel = supabase
+    const channel = supabaseAdmin
       .channel('sales-realtime')
       .on(
         'postgres_changes',
@@ -87,7 +87,7 @@ export default function SalesPage() {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      supabaseAdmin.removeChannel(channel)
     }
   }, [])
 
@@ -106,7 +106,8 @@ export default function SalesPage() {
       const startIso = `${startDate}T00:00:00.000Z`
       const endIso = `${endDate}T23:59:59.999Z`
       
-      const { data, error } = await supabase
+      // ✅ USAR supabaseAdmin para ignorar RLS
+      const { data, error } = await supabaseAdmin
         .from('sales')
         .select('*')
         .gte('created_at', startIso)
@@ -116,6 +117,7 @@ export default function SalesPage() {
       if (error) {
         console.error('Erro ao carregar vendas:', error)
       } else {
+        console.log('✅ Vendas carregadas:', data?.length)
         setSales(data || [])
       }
     } catch (error) {

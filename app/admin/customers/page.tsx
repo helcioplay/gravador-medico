@@ -6,7 +6,7 @@ import {
   Users, Search, Mail, Phone, Calendar, DollarSign, 
   ShoppingBag, Filter, Download, RefreshCw, Eye, TrendingUp 
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { format, subDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { fetchCustomersWithMetrics } from '@/lib/dashboard-queries'
@@ -66,7 +66,7 @@ export default function CustomersPage() {
 
       // Usar helper de queries
       const { data, error } = await fetchCustomersWithMetrics(
-        supabase,
+        supabaseAdmin,
         startDate,
         endDate
       )

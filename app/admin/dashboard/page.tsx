@@ -17,7 +17,7 @@ import {
   RefreshCw,
   Calendar,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
       })
       
       // TESTE: Buscar TODAS as vendas (sem filtro de data)
-      const { data: allSales, error: testError } = await supabase
+      const { data: allSales, error: testError } = await supabaseAdmin
         .from('sales')
         .select('*')
         .order('created_at', { ascending: false })
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
       console.log('🔍 TESTE - Vendas:', allSales)
       
       // 1. Buscar vendas do período atual
-      const { data: currentSales, error: currentError} = await supabase
+      const { data: currentSales, error: currentError} = await supabaseAdmin
         .from('sales')
         .select('*')
         .gte('created_at', startIso)
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
       
       if (currentError || effectiveSales.length === 0) {
         console.warn('⚠️ Filtro falhou ou retornou vazio, buscando sem filtro de data')
-        const { data: fallbackSales } = await supabase
+        const { data: fallbackSales } = await supabaseAdmin
           .from('sales')
           .select('*')
           .order('created_at', { ascending: false })
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
       }
 
       // 2. Buscar vendas do período anterior (para comparação)
-      const { data: previousSales } = await supabase
+      const { data: previousSales } = await supabaseAdmin
         .from('sales')
         .select('*')
         .gte('created_at', previousStartIso)

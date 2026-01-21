@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import {
   Users,
   Mail,
@@ -138,7 +138,7 @@ export default function CRMPage() {
 
   useEffect(() => {
     // Realtime para novas vendas
-    const channel = supabase
+    const channel = supabaseAdmin
       .channel('sales-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sales' }, (payload: any) => {
         console.log('🆕 Nova venda detectada, criando lead...')
@@ -147,7 +147,7 @@ export default function CRMPage() {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      supabaseAdmin.removeChannel(channel)
     }
   }, [])
 
@@ -161,7 +161,7 @@ export default function CRMPage() {
       const end = endOfDay(new Date(endDate))
       
       // 1. Buscar todas as vendas no período
-      const { data: sales, error: salesError } = await supabase
+      const { data: sales, error: salesError } = await supabaseAdmin
         .from('sales')
         .select('*')
         .gte('created_at', start.toISOString())
@@ -173,7 +173,7 @@ export default function CRMPage() {
       }
 
       // 2. Buscar todos os carrinhos abandonados no período
-      const { data: carts, error: cartsError } = await supabase
+      const { data: carts, error: cartsError } = await supabaseAdmin
         .from('abandoned_carts')
         .select('*')
         .gte('created_at', start.toISOString())

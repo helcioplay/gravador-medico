@@ -12,7 +12,7 @@ import {
   TrendingUp,
   Filter,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import {
@@ -87,7 +87,7 @@ export default function ReportsPage() {
       })
 
       // Buscar vendas do período (SEM sales_items por enquanto)
-      const { data: sales, error } = await supabase
+      const { data: sales, error } = await supabaseAdmin
         .from('sales')
         .select('*')
         .gte('created_at', start.toISOString())

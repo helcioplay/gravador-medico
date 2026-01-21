@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Webhook, Search, Filter, Calendar, CheckCircle, XCircle, Clock, Eye } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -35,7 +35,7 @@ export default function WebhooksPage() {
     try {
       setLoading(true)
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('webhooks_logs')
         .select('*')
         .order('created_at', { ascending: false })

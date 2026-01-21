@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { Card } from '@/components/ui/card'
 import { BarChart3, Users, TrendingUp, Eye, MousePointerClick, Radio, Globe, Smartphone } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
       const now = new Date()
       const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString()
       
-      const { data: onlineData, error } = await supabase
+      const { data: onlineData, error } = await supabaseAdmin
         .from('analytics_visits')
         .select('session_id, last_seen')
         .gte('last_seen', fiveMinutesAgo)
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
       const endDate = endOfDay(new Date())
 
       // 1. Total de visitas e sessões únicas
-      const { data: visits, error: visitsError } = await supabase
+      const { data: visits, error: visitsError } = await supabaseAdmin
         .from('analytics_visits')
         .select('*')
         .gte('created_at', startDate.toISOString())
@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
       const uniqueSessions = new Set(visits?.map(v => v.session_id) || []).size
 
       // 2. Total de vendas no período
-      const { data: sales, error: salesError } = await supabase
+      const { data: sales, error: salesError } = await supabaseAdmin
         .from('sales')
         .select('*')
         .eq('status', 'approved')
@@ -108,7 +108,7 @@ export default function AnalyticsPage() {
       if (salesError) throw salesError
 
       // 3. Carrinhos abandonados
-      const { data: abandoned, error: abandonedError } = await supabase
+      const { data: abandoned, error: abandonedError } = await supabaseAdmin
         .from('abandoned_carts')
         .select('*')
         .eq('status', 'abandoned')
@@ -189,7 +189,7 @@ export default function AnalyticsPage() {
 
       // 7. 🆕 VISITANTES ONLINE (últimos 5 minutos)
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-      const { data: onlineData, error: onlineError } = await supabase
+      const { data: onlineData, error: onlineError } = await supabaseAdmin
         .from('analytics_visits')
         .select('session_id')
         .gte('last_seen', fiveMinutesAgo)
