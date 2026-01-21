@@ -1,18 +1,22 @@
 # 📸 Estratégia de Fallback para Fotos de Perfil - DEFINITIVA
 
-## 🔍 Problema Identificado
+## 🔍 Problema Identificado (Confirmado via Teste cURL)
 
-Todos os endpoints tradicionais de foto de perfil retornam **404** na versão atual da Evolution API:
-- ❌ `POST /chat/fetchProfilePicture` - 404
-- ❌ `GET /chat/findProfilePicture` - 404
-- ❌ `GET /chat/findContact` - 404
+Após testes com `curl` em todos os endpoints, confirmamos que **APENAS 2 endpoints funcionam**:
 
-**Único endpoint funcional:**
-- ✅ `GET /chat/findContacts/{instance}?where[remoteJid]=xxx`
+### ✅ Endpoints Funcionais:
+- `GET /instance/fetchInstances` - Status da instância
+- `GET /chat/findContacts/{instance}?where[remoteJid]=xxx` - **Buscar contatos (USAR ESTE!)**
+
+### ❌ Endpoints que Retornam 404:
+- `POST /chat/fetchProfilePicture` - 404
+- `GET /chat/findProfilePicture` - 404  
+- `GET /chat/findPicture` - 404
+- `GET /chat/findContact` - 404
 
 ## 🎯 Solução Implementada
 
-### Estratégia de 3 Níveis
+### Estratégia de 3 Níveis (Nunca Trava o Processo)
 
 #### 1️⃣ **Tentar extrair do payload da mensagem**
 Algumas vezes a Evolution API já envia a foto no próprio evento `messages.upsert`:
@@ -25,42 +29,85 @@ messagePayload.picture
 messagePayload.imgUrl
 ```
 
-#### 2️⃣ **Buscar via findContacts (ÚNICO que funciona)**
+#### 2️⃣ **Buscar via findContacts (ÚNICO endpoint confirmado funcionando)**
 ```bash
 GET /chat/findContacts/{instance}?where[remoteJid]=5511999999999@s.whatsapp.net
 ```
 
-**Resposta esperada:**
+**Headers necessários:**
+```bash
+apikey: Beagle3005
+Content-Type: application/json
+```
+
+**Resposta esperada (HTTP 200):**
 ```json
 [
   {
     "id": "5511999999999@s.whatsapp.net",
-    "profilePictureUrl": "https://...",
+    "profilePictureUrl": "https://pps.whatsapp.net/v/...",
     "pushName": "João Silva",
-    ...
+    "isGroup": false
   }
 ]
 ```
 
-#### 3️⃣ **Fallback para null**
-Se nenhuma das estratégias funcionar, salva `null` no banco e **não trava o processo**.
+#### 3️⃣ **Fallback Seguro para null**
+Se nenhuma das estratégias funcionar:
+- ✅ Retorna `null`
+- ✅ Salva o contato SEM foto
+- ✅ Salva a mensagem normalmente
+- ✅ **NUNCA trava o webhook**
 
 ## 🔧 Implementação no Webhook
 
 ```typescript
-// PASSO 1: Tentar buscar foto com fallback
+// PASSO 1: Tentar buscar foto (NÃO CRÍTICO - timeout 5s)
 const profilePictureUrl = await fetchProfilePicture(
   key.remoteJid,    // Ex: 5511999999999@s.whatsapp.net
   payload.data      // Payload completo da mensagem
 )
 
-// PASSO 2: Salvar no contato (null é aceito)
+// PASSO 2: Salvar contato (SEMPRE salva, mesmo sem foto)
 await upsertWhatsAppContact({
   remote_jid: key.remoteJid,
   push_name: pushName || undefined,
-  profile_picture_url: profilePictureUrl || undefined,  // ✅ Pode ser null
+  profile_picture_url: profilePictureUrl || undefined,  // ✅ null é aceito
   is_group: key.remoteJid.includes('@g.us')
 })
+
+// PASSO 3: Salvar mensagem (FK constraint resolvido)
+await upsertWhatsAppMessage(messageInput)
+```
+
+## 🛡️ Proteções Implementadas
+
+### 1. **Timeout de 5 segundos**
+```typescript
+const controller = new AbortController()
+const timeoutId = setTimeout(() => controller.abort(), 5000)
+```
+
+### 2. **Try-Catch Global**
+```typescript
+try {
+  // Buscar foto
+} catch (error) {
+  console.error('❌ [FOTO] Erro (não crítico):', error)
+  return null  // ✅ Nunca quebra o processo
+}
+```
+
+### 3. **Validação de Tipo**
+```typescript
+if (photoUrl && typeof photoUrl === 'string') {
+  return photoUrl
+}
+```
+
+### 4. **Array ou Objeto**
+```typescript
+const contacts = Array.isArray(data) ? data : (data ? [data] : [])
 ```
 
 ## 📊 Campos Verificados na Resposta

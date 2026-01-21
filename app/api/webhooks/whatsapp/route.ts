@@ -10,24 +10,27 @@ import { upsertWhatsAppMessage, upsertWhatsAppContact, messageExists } from '@/l
 import type { EvolutionMessagePayload, CreateMessageInput } from '@/lib/types/whatsapp'
 
 /**
- * Busca a foto de perfil do contato com estratégia de fallback
+ * Busca a foto de perfil do contato com estratégia de fallback robusta
  * 
- * ESTRATÉGIA:
+ * ESTRATÉGIA DEFINITIVA (após testes com curl):
  * 1. Tenta extrair do próprio payload da mensagem (às vezes a Evolution envia)
  * 2. Tenta buscar via GET /chat/findContacts/{instance}?where[remoteJid]=xxx
- * 3. Se falhar tudo, retorna null (não trava o processo)
+ * 3. Se qualquer erro ocorrer, retorna null e NÃO TRAVA o processo
+ * 
+ * IMPORTANTE: A mensagem SEMPRE será salva, mesmo sem foto
  */
 async function fetchProfilePicture(
   remoteJid: string, 
   messagePayload?: any
 ): Promise<string | null> {
+  // Wrapper try-catch global para garantir que NUNCA trava
   try {
     const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL
     const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY
     const EVOLUTION_INSTANCE_NAME = process.env.EVOLUTION_INSTANCE_NAME
 
     if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE_NAME) {
-      console.warn('⚠️ Variáveis de ambiente Evolution API não configuradas')
+      console.warn('⚠️ Variáveis de ambiente Evolution API não configuradas - salvando sem foto')
       return null
     }
 
@@ -44,56 +47,77 @@ async function fetchProfilePicture(
         null
 
       if (photoFromPayload) {
-        console.log(`✅ Foto encontrada no payload da mensagem: ${photoFromPayload}`)
+        console.log(`✅ [FOTO] Encontrada no payload: ${photoFromPayload}`)
         return photoFromPayload
       }
     }
 
     // ================================================================
-    // ESTRATÉGIA 2: Buscar via endpoint findContacts (ÚNICO que funciona)
+    // ESTRATÉGIA 2: Buscar via /chat/findContacts (ÚNICO endpoint que funciona)
+    // Confirmado via teste curl: fetchInstances funciona, findPicture dá 404
     // ================================================================
     const url = `${EVOLUTION_API_URL}/chat/findContacts/${EVOLUTION_INSTANCE_NAME}?where[remoteJid]=${encodeURIComponent(remoteJid)}`
     
-    console.log(`📸 Buscando foto via findContacts: ${url}`)
+    console.log(`📸 [FOTO] Tentando buscar via findContacts: ${url}`)
+    
+    // Timeout de 5 segundos para não travar o webhook
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
     
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'apikey': EVOLUTION_API_KEY
-      }
+        'apikey': EVOLUTION_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal
     })
 
+    clearTimeout(timeoutId)
+
     if (!response.ok) {
-      console.warn(`⚠️ Erro HTTP ${response.status} ao buscar contatos para ${remoteJid}`)
+      console.warn(`⚠️ [FOTO] HTTP ${response.status} - Salvando mensagem sem foto`)
       return null
     }
 
     const data = await response.json()
     
-    console.log(`📸 Resposta findContacts:`, JSON.stringify(data, null, 2))
+    console.log(`📸 [FOTO] Resposta recebida:`, JSON.stringify(data, null, 2))
     
-    // A resposta pode ser um array de contatos
-    const contacts = Array.isArray(data) ? data : [data]
+    // A resposta pode ser um array de contatos ou objeto único
+    const contacts = Array.isArray(data) ? data : (data ? [data] : [])
     
+    if (contacts.length === 0) {
+      console.log(`⚠️ [FOTO] Nenhum contato retornado - salvando sem foto`)
+      return null
+    }
+    
+    // Tentar múltiplos campos possíveis
     for (const contact of contacts) {
       const photoUrl = 
         contact.profilePictureUrl || 
         contact.profilePicUrl || 
         contact.picture || 
         contact.imgUrl ||
+        contact.image ||
         null
 
-      if (photoUrl) {
-        console.log(`✅ Foto de perfil encontrada via findContacts: ${photoUrl}`)
+      if (photoUrl && typeof photoUrl === 'string') {
+        console.log(`✅ [FOTO] Encontrada via findContacts: ${photoUrl}`)
         return photoUrl
       }
     }
 
-    console.log(`⚠️ Nenhuma foto de perfil encontrada - salvando como null`)
+    console.log(`⚠️ [FOTO] Contatos retornados mas sem campo de foto - salvando sem foto`)
     return null
     
   } catch (error) {
-    console.error('❌ Erro ao buscar foto de perfil (não crítico):', error)
+    // CRÍTICO: Mesmo com erro, retorna null para não travar o webhook
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('⏱️ [FOTO] Timeout ao buscar foto - continuando sem foto')
+    } else {
+      console.error('❌ [FOTO] Erro ao buscar (não crítico - continuando):', error)
+    }
     return null
   }
 }
@@ -204,27 +228,40 @@ export async function POST(request: NextRequest) {
     const { content, media_url, caption, type } = extractMessageContent(message, messageType)
 
     // ================================================================
-    // PASSO 1: Buscar foto de perfil do contato
-    // Estratégia: 1) Tentar no payload, 2) Buscar via API, 3) null
+    // PASSO 1: Buscar foto de perfil (NÃO CRÍTICO - nunca trava)
+    // Usa endpoint /chat/findContacts confirmado via teste curl
     // ================================================================
-    console.log('📸 Buscando foto de perfil com fallback...')
+    console.log('📸 [FOTO] Iniciando busca de foto de perfil...')
     const profilePictureUrl = await fetchProfilePicture(key.remoteJid, payload.data)
+    
+    if (profilePictureUrl) {
+      console.log(`✅ [FOTO] Foto obtida com sucesso: ${profilePictureUrl.substring(0, 50)}...`)
+    } else {
+      console.log(`ℹ️ [FOTO] Nenhuma foto encontrada - salvando contato sem foto`)
+    }
 
     // ================================================================
     // PASSO 2: UPSERT do contato PRIMEIRO (resolver FK constraint)
+    // GARANTIA: Sempre salva o contato, mesmo sem foto
     // ================================================================
-    console.log('🔄 Criando/atualizando contato primeiro...')
-    await upsertWhatsAppContact({
-      remote_jid: key.remoteJid,
-      push_name: pushName || undefined,
-      profile_picture_url: profilePictureUrl || undefined,
-      is_group: key.remoteJid.includes('@g.us')
-    })
-    console.log('✅ Contato garantido:', key.remoteJid)
+    console.log('🔄 [CONTATO] Criando/atualizando contato...')
+    try {
+      await upsertWhatsAppContact({
+        remote_jid: key.remoteJid,
+        push_name: pushName || undefined,
+        profile_picture_url: profilePictureUrl || undefined, // ✅ null é aceito
+        is_group: key.remoteJid.includes('@g.us')
+      })
+      console.log(`✅ [CONTATO] Salvo: ${key.remoteJid} (foto: ${profilePictureUrl ? 'SIM' : 'NÃO'})`)
+    } catch (contactError) {
+      console.error('❌ [CONTATO] Erro ao salvar contato:', contactError)
+      throw contactError // Re-throw para não salvar mensagem órfã
+    }
 
     // ================================================================
     // PASSO 3: INSERT da mensagem (agora o FK existe)
     // ================================================================
+    console.log('💬 [MENSAGEM] Salvando mensagem...')
     const messageInput: CreateMessageInput = {
       message_id: key.id,
       remote_jid: key.remoteJid,
@@ -239,12 +276,13 @@ export async function POST(request: NextRequest) {
     }
 
     const savedMessage = await upsertWhatsAppMessage(messageInput)
-    console.log('✅ Mensagem salva:', savedMessage.id)
+    console.log(`✅ [MENSAGEM] Salva com sucesso: ${savedMessage.id}`)
 
     return NextResponse.json({
       success: true,
       message: 'Mensagem processada com sucesso',
-      messageId: savedMessage.id
+      messageId: savedMessage.id,
+      hasProfilePicture: !!profilePictureUrl
     })
 
   } catch (error) {
