@@ -58,15 +58,44 @@ sales_items  ← ESTA É A CHAVE!
 products
 ```
 
-### 5. Teste a função de auto-discovery
+### 4. Verifique se funcionou
+
+Execute o script de teste completo:
 
 ```sql
-SELECT * FROM discover_products_from_sales();
+-- Copie TODO o conteúdo de:
+database/TESTE-PRODUCTS.sql
 ```
 
-Se retornar dados → **✅ Funcionou!**
+Ou teste manualmente:
 
-Se retornar vazio → Normal (você ainda não tem vendas com itens)
+```sql
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name IN ('sales', 'sales_items', 'products');
+```
+
+**Resultado esperado:**
+```
+table_name
+----------
+sales
+sales_items  ← ESTA É A CHAVE!
+products
+```
+
+### 5. Teste a VIEW product_performance
+
+```sql
+SELECT * FROM product_performance LIMIT 5;
+```
+
+**Se der erro:** Volte aqui e me avise o erro exato
+
+**Se retornar vazio:** Normal! Você ainda não tem vendas
+
+**Se retornar dados:** ✅ **Funcionou perfeitamente!**
 
 ---
 

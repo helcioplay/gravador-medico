@@ -83,87 +83,71 @@ WITH recent_sales AS (
         INNER JOIN public.sales_items si ON si.sale_id = s.id
     WHERE 
         s.created_at >= CURRENT_DATE - INTERVAL '30 days'
-),
-product_stats AS (
-    SELECT
-        COALESCE(p.id, gen_random_uuid()) as product_id,
-        COALESCE(rs.product_name, 'Unknown') as product_name,
-        COALESCE(rs.product_sku, md5(rs.product_name)) as product_sku,
-        
-        -- Métricas de vendas
-        COUNT(CASE WHEN rs.status = 'approved' THEN 1 END) as total_sales,
-        SUM(CASE WHEN rs.status = 'approved' THEN rs.price * rs.quantity ELSE 0 END) as total_revenue,
-        
-        -- Métricas de reembolso
-        COUNT(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN 1 END) as total_refunds,
-        SUM(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN rs.price * rs.quantity ELSE 0 END) as refund_amount,
-        
-        -- Taxa de reembolso (%)
-        CASE 
-            WHEN COUNT(*) > 0 THEN 
-                ROUND((COUNT(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN 1 END)::NUMERIC / COUNT(*)::NUMERIC) * 100, 2)
-            ELSE 0
-        END as refund_rate,
-        
-        -- Ticket médio
-        CASE 
-            WHEN COUNT(CASE WHEN rs.status = 'approved' THEN 1 END) > 0 THEN
-                ROUND(SUM(CASE WHEN rs.status = 'approved' THEN rs.price * rs.quantity ELSE 0 END) / 
-                      COUNT(CASE WHEN rs.status = 'approved' THEN 1 END), 2)
-            ELSE 0
-        END as average_ticket,
-        
-        -- Taxa de conversão (aprovado / total)
-        CASE 
-            WHEN COUNT(*) > 0 THEN 
-                ROUND((COUNT(CASE WHEN rs.status = 'approved' THEN 1 END)::NUMERIC / COUNT(*)::NUMERIC) * 100, 2)
-            ELSE 0
-        END as conversion_rate,
-        
-        -- Health Score (0-100)
-        CASE 
-            WHEN COUNT(*) >= 5 THEN
-                ROUND(
-                    (
-                        -- Peso da conversão (40 pontos)
-                        (COUNT(CASE WHEN rs.status = 'approved' THEN 1 END)::NUMERIC / COUNT(*)::NUMERIC) * 40 +
-                        -- Peso do reembolso invertido (40 pontos)
-                        (1 - (COUNT(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN 1 END)::NUMERIC / GREATEST(COUNT(*), 1)::NUMERIC)) * 40 +
-                        -- Peso do volume (20 pontos)
-                        LEAST(COUNT(CASE WHEN rs.status = 'approved' THEN 1 END) / 10.0, 1) * 20
-                    )
-                , 0)
-            ELSE 50 -- Score neutro para produtos com poucos dados
-        END as health_score,
-        
-        MAX(rs.created_at) as last_sale_at,
-        MIN(rs.created_at) as first_sale_at
-        
-    FROM 
-        recent_sales rs
-        LEFT JOIN public.products p ON (
-            p.external_id = rs.product_sku 
-            OR p.name = rs.product_name
-        )
-    GROUP BY 
-        p.id, rs.product_name, rs.product_sku
 )
-SELECT 
-    product_id,
-    product_name,
-    product_sku,
-    total_sales,
-    total_revenue,
-    total_refunds,
-    refund_amount,
-    refund_rate,
-    average_ticket,
-    conversion_rate,
-    health_score,
-    last_sale_at,
-    first_sale_at
-FROM product_stats
-ORDER BY total_sales DESC;
+SELECT
+    COALESCE(p.id, gen_random_uuid()) as product_id,
+    rs.product_name,
+    COALESCE(rs.product_sku, md5(rs.product_name)) as product_sku,
+    
+    -- Métricas de vendas
+    COUNT(CASE WHEN rs.status = 'approved' THEN 1 END) as total_sales,
+    SUM(CASE WHEN rs.status = 'approved' THEN rs.price * rs.quantity ELSE 0 END) as total_revenue,
+    
+    -- Métricas de reembolso
+    COUNT(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN 1 END) as total_refunds,
+    SUM(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN rs.price * rs.quantity ELSE 0 END) as refund_amount,
+    
+    -- Taxa de reembolso (%)
+    CASE 
+        WHEN COUNT(*) > 0 THEN 
+            ROUND((COUNT(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN 1 END)::NUMERIC / COUNT(*)::NUMERIC) * 100, 2)
+        ELSE 0
+    END as refund_rate,
+    
+    -- Ticket médio
+    CASE 
+        WHEN COUNT(CASE WHEN rs.status = 'approved' THEN 1 END) > 0 THEN
+            ROUND(SUM(CASE WHEN rs.status = 'approved' THEN rs.price * rs.quantity ELSE 0 END) / 
+                  COUNT(CASE WHEN rs.status = 'approved' THEN 1 END), 2)
+        ELSE 0
+    END as average_ticket,
+    
+    -- Taxa de conversão (aprovado / total)
+    CASE 
+        WHEN COUNT(*) > 0 THEN 
+            ROUND((COUNT(CASE WHEN rs.status = 'approved' THEN 1 END)::NUMERIC / COUNT(*)::NUMERIC) * 100, 2)
+        ELSE 0
+    END as conversion_rate,
+    
+    -- Health Score (0-100)
+    CASE 
+        WHEN COUNT(*) >= 5 THEN
+            ROUND(
+                (
+                    -- Peso da conversão (40 pontos)
+                    (COUNT(CASE WHEN rs.status = 'approved' THEN 1 END)::NUMERIC / COUNT(*)::NUMERIC) * 40 +
+                    -- Peso do reembolso invertido (40 pontos)
+                    (1 - (COUNT(CASE WHEN rs.status IN ('refunded', 'chargeback') THEN 1 END)::NUMERIC / GREATEST(COUNT(*), 1)::NUMERIC)) * 40 +
+                    -- Peso do volume (20 pontos)
+                    LEAST(COUNT(CASE WHEN rs.status = 'approved' THEN 1 END) / 10.0, 1) * 20
+                )
+            , 0)
+        ELSE 50 -- Score neutro para produtos com poucos dados
+    END as health_score,
+    
+    MAX(rs.created_at) as last_sale_at,
+    MIN(rs.created_at) as first_sale_at
+    
+FROM 
+    recent_sales rs
+    LEFT JOIN public.products p ON (
+        p.external_id = rs.product_sku 
+        OR p.name = rs.product_name
+    )
+GROUP BY 
+    p.id, rs.product_name, rs.product_sku
+ORDER BY 
+    COUNT(CASE WHEN rs.status = 'approved' THEN 1 END) DESC;
 
 -- 7. Criar VIEW de tendências (para sparklines)
 CREATE OR REPLACE VIEW public.product_trends AS
