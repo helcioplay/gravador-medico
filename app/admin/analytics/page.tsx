@@ -150,36 +150,36 @@ export default function AnalyticsPage() {
             <MetricCard
               icon={<Users className="w-6 h-6" />}
               label="Visitantes"
-              value={(health.unique_visitors || 0).toLocaleString()}
-              change={health.visitors_change || 0}
+              value={health.unique_visitors.toLocaleString()}
+              change={health.visitors_change}
               color="purple"
             />
             <MetricCard
               icon={<DollarSign className="w-6 h-6" />}
               label="Receita"
-              value={`R$ ${((health.revenue || 0) / 1000).toFixed(1)}k`}
-              change={health.revenue_change || 0}
+              value={`R$ ${(health.revenue / 1000).toFixed(1)}k`}
+              change={health.revenue_change}
               color="green"
             />
             <MetricCard
               icon={<Target className="w-6 h-6" />}
               label="Conversão"
-              value={`${(health.conversion_rate || 0).toFixed(1)}%`}
+              value={`${health.conversion_rate}%`}
               change={0}
               color="cyan"
             />
             <MetricCard
               icon={<TrendingUp className="w-6 h-6" />}
               label="Ticket Médio"
-              value={`R$ ${(health.average_order_value || 0).toFixed(0)}`}
-              change={health.aov_change || 0}
+              value={`R$ ${health.average_order_value.toFixed(0)}`}
+              change={health.aov_change}
               color="orange"
             />
             <MetricCard
               icon={<Clock className="w-6 h-6" />}
               label="Tempo Médio"
-              value={`${Math.round((health.avg_time_seconds || 0) / 60)}m`}
-              change={health.time_change || 0}
+              value={`${Math.round(health.avg_time_seconds / 60)}m`}
+              change={health.time_change}
               color="blue"
             />
           </div>
