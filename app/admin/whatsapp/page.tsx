@@ -85,22 +85,8 @@ export default function WhatsAppInboxPage() {
           
           const newMessage = payload.new as WhatsAppMessage
           
-          // 🔔 Criar notificação se NÃO for mensagem enviada por mim
-          if (!newMessage.from_me) {
-            // Buscar dados do contato para a notificação
-            const contact = conversations.find(c => c.remote_jid === newMessage.remote_jid)
-            const contactName = contact?.name || contact?.push_name || newMessage.remote_jid.split('@')[0]
-            
-            addNotification({
-              type: 'whatsapp_message',
-              title: contactName,
-              message: newMessage.content || '[Mídia]',
-              metadata: {
-                whatsapp_remote_jid: newMessage.remote_jid,
-                profile_picture_url: contact?.profile_picture_url
-              }
-            })
-          }
+          // ⚠️ NOTIFICAÇÃO removida daqui - agora é feita apenas no NotificationProvider (global)
+          // Isso evita duplicatas e garante que funcione em qualquer página do admin
           
           // Se a mensagem pertence ao chat atual aberto
           if (newMessage.remote_jid === selectedRemoteJid) {

@@ -109,27 +109,40 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         async (payload) => {
           const newMessage = payload.new as WhatsAppMessage
           
-          // Só notificar mensagens RECEBIDAS (não enviadas por mim)
-          if (!newMessage.from_me) {
-            // Buscar dados do contato
-            const { data: contact } = await supabaseAdmin
-              .from('whatsapp_contacts')
-              .select('name, push_name, profile_picture_url')
-              .eq('remote_jid', newMessage.remote_jid)
-              .single()
-            
-            const contactName = contact?.name || contact?.push_name || newMessage.remote_jid.split('@')[0]
-            
-            addNotification({
-              type: 'whatsapp_message',
-              title: contactName,
-              message: newMessage.content || '[Mídia]',
-              metadata: {
-                whatsapp_remote_jid: newMessage.remote_jid,
-                profile_picture_url: contact?.profile_picture_url
-              }
-            })
+          console.log('🔔 [NotificationProvider] Nova mensagem via Realtime:', {
+            from_me: newMessage.from_me,
+            content: newMessage.content?.substring(0, 30),
+            remote_jid: newMessage.remote_jid
+          })
+          
+          // ⚠️ IMPORTANTE: Só notificar mensagens RECEBIDAS (não enviadas por mim)
+          // from_me === true = mensagem enviada pelo SISTEMA
+          // from_me === false = mensagem recebida do CLIENTE
+          if (newMessage.from_me === true) {
+            console.log('🚫 [NotificationProvider] Ignorando notificação (mensagem enviada por mim)')
+            return
           }
+          
+          // Buscar dados do contato
+          const { data: contact } = await supabaseAdmin
+            .from('whatsapp_contacts')
+            .select('name, push_name, profile_picture_url')
+            .eq('remote_jid', newMessage.remote_jid)
+            .single()
+          
+          const contactName = contact?.name || contact?.push_name || newMessage.remote_jid.split('@')[0]
+          
+          console.log('✅ [NotificationProvider] Criando notificação:', contactName)
+          
+          addNotification({
+            type: 'whatsapp_message',
+            title: contactName,
+            message: newMessage.content || '[Mídia]',
+            metadata: {
+              whatsapp_remote_jid: newMessage.remote_jid,
+              profile_picture_url: contact?.profile_picture_url
+            }
+          })
         }
       )
       .subscribe((status) => {

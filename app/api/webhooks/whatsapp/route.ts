@@ -218,8 +218,11 @@ export async function POST(request: NextRequest) {
       instance: payload.instance,
       remoteJid: payload.data.key.remoteJid,
       fromMe: payload.data.key.fromMe,
-      messageType: payload.data.messageType
+      messageType: payload.data.messageType,
+      fullKey: payload.data.key
     })
+    
+    console.log('🔍 [DEBUG from_me] Valor recebido:', payload.data.key.fromMe, typeof payload.data.key.fromMe)
 
     // Ignorar eventos que não são de mensagens
     if (payload.event !== 'messages.upsert') {
@@ -291,9 +294,11 @@ export async function POST(request: NextRequest) {
       status: status as any,
       raw_payload: payload.data
     }
+    
+    console.log('🔍 [DEBUG SAVE] Salvando mensagem com from_me:', messageInput.from_me)
 
     const savedMessage = await upsertWhatsAppMessage(messageInput)
-    console.log(`✅ Mensagem salva: ${savedMessage.id}`)
+    console.log(`✅ Mensagem salva: ${savedMessage.id}, from_me final: ${savedMessage.from_me}`)
 
     return NextResponse.json({
       success: true,
