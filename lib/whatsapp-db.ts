@@ -19,10 +19,18 @@ import type {
  * Busca todos os contatos/conversas ordenados pela última mensagem
  */
 export async function getWhatsAppConversations(): Promise<WhatsAppConversation[]> {
+  console.log('🔍 [getWhatsAppConversations] Buscando conversas...')
+  
   const { data, error } = await supabaseAdmin
     .from('whatsapp_conversations')
     .select('*')
     .order('last_message_timestamp', { ascending: false, nullsFirst: false })
+
+  console.log('🔍 [getWhatsAppConversations] Resultado:', {
+    total: data?.length,
+    hasError: !!error,
+    error
+  })
 
   if (error) {
     console.error('❌ Erro ao buscar conversas:', error)
