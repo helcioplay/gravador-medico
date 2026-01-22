@@ -20,8 +20,10 @@ import {
   ShoppingBag,
   CheckCircle2,
   Clock,
-  MessageSquare
+  MessageSquare,
+  MessageCircle
 } from 'lucide-react'
+import NotificationBell from '@/components/NotificationBell'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -179,6 +181,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: MessageSquare, 
       label: 'WhatsApp', 
       href: '/admin/whatsapp',
+      badge: null
+    },
+    { 
+      icon: MessageCircle, 
+      label: 'Chat Interno', 
+      href: '/admin/chat',
       badge: null
     },
     { 
@@ -456,6 +464,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Right Actions */}
             <div className="flex items-center gap-4 ml-auto">
+              {/* Sino de Notificações do Chat/WhatsApp */}
+              <NotificationBell />
+              
               {/* Notificações Dropdown */}
               <div className="relative" ref={notificationsRef}>
                 <button 

@@ -202,10 +202,23 @@ $$ LANGUAGE plpgsql;
 -- HABILITAR REALTIME
 -- ================================================================
 
--- Publicar mudanças nas conversas
-ALTER PUBLICATION supabase_realtime ADD TABLE admin_chat_conversations;
-ALTER PUBLICATION supabase_realtime ADD TABLE admin_chat_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE admin_chat_participants;
+-- Publicar mudanças nas conversas (verifica se já não está adicionada)
+DO $$
+BEGIN
+  -- Remover primeiro se já existir
+  BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS admin_chat_conversations;
+    ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS admin_chat_messages;
+    ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS admin_chat_participants;
+  EXCEPTION WHEN OTHERS THEN
+    NULL; -- Ignora erro se não existir
+  END;
+  
+  -- Adicionar as tabelas
+  ALTER PUBLICATION supabase_realtime ADD TABLE admin_chat_conversations;
+  ALTER PUBLICATION supabase_realtime ADD TABLE admin_chat_messages;
+  ALTER PUBLICATION supabase_realtime ADD TABLE admin_chat_participants;
+END $$;
 
 -- ================================================================
 -- COMENTÁRIOS
