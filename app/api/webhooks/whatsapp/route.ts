@@ -60,7 +60,7 @@ async function forwardToN8n(payload: EvolutionMessagePayload) {
 
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const timeoutId = setTimeout(() => controller.abort(), 60000)
 
     const response = await fetch(n8nUrl, {
       method: 'POST',
@@ -569,4 +569,9 @@ export async function GET() {
     webhook: 'whatsapp-evolution-api-v2',
     timestamp: new Date().toISOString()
   })
+}
+
+// Configuração de timeout para o route handler
+export const config = {
+  maxDuration: 60
 }
