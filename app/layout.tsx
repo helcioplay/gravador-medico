@@ -85,7 +85,7 @@ export default async function RootLayout({
       <body className="bg-white">
         <NotificationProvider>
           <ToastProvider>
-            <Toaster position="top-right" />
+            <Toaster position="bottom-right" />
             
             {/* Analytics Tracker - rastreia visitas automaticamente */}
             <Suspense fallback={null}>
