@@ -192,7 +192,7 @@ export default function TrackingLinksPage() {
   // Skeleton loader
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen bg-zinc-950 p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="animate-pulse">
             <div className="h-10 bg-zinc-800 rounded w-64 mb-2"></div>
@@ -210,14 +210,14 @@ export default function TrackingLinksPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-zinc-950 p-6 space-y-6">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-zinc-100">
             Links Rastreáveis
           </h1>
-          <p className="text-gray-400 mt-2">
+          <p className="text-zinc-400 mt-2">
             Crie e gerencie links de rastreamento para suas campanhas
           </p>
         </div>
@@ -231,19 +231,19 @@ export default function TrackingLinksPage() {
       {/* Lista de Links */}
       {isLoading ? (
         <div className="text-center py-12">
-          <p className="text-gray-400">Carregando links...</p>
+          <p className="text-zinc-400">Carregando links...</p>
         </div>
       ) : links.length === 0 ? (
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800">
           <CardContent className="py-12 text-center">
-            <Link2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">
+            <Link2 className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-zinc-100 mb-2">
               Nenhum link criado ainda
             </h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-zinc-400 mb-6">
               Crie seu primeiro link rastreável para começar
             </p>
-            <Button onClick={() => handleOpenModal()}>
+            <Button onClick={() => handleOpenModal()} className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
               <Plus className="w-4 h-4 mr-2" />
               Criar Primeiro Link
             </Button>
@@ -252,27 +252,28 @@ export default function TrackingLinksPage() {
       ) : (
         <div className="grid gap-4">
           {links.map((link) => (
-            <Card key={link.id} className="bg-gray-800/50 border-gray-700">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="flex items-center gap-2 text-white">
-                      {link.campaign_name || link.slug}
+            <Card key={link.id} className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="flex items-center gap-2 text-zinc-100">
+                      <span className="truncate">{link.campaign_name || link.slug}</span>
                       {link.is_active ? (
-                        <Power className="w-4 h-4 text-green-400" />
+                        <Power className="w-4 h-4 text-green-400 flex-shrink-0" />
                       ) : (
-                        <PowerOff className="w-4 h-4 text-gray-400" />
+                        <PowerOff className="w-4 h-4 text-zinc-400 flex-shrink-0" />
                       )}
                     </CardTitle>
-                    <CardDescription className="text-gray-400">
+                    <CardDescription className="text-zinc-400 font-mono text-sm mt-1">
                       /r/{link.slug}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleCopyLink(link.slug)}
+                      className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -280,6 +281,7 @@ export default function TrackingLinksPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => window.open(`/r/${link.slug}`, '_blank')}
+                      className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </Button>
@@ -287,6 +289,7 @@ export default function TrackingLinksPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenModal(link)}
+                      className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -294,20 +297,21 @@ export default function TrackingLinksPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(link.id)}
+                      className="text-zinc-400 hover:text-red-400 hover:bg-zinc-800"
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
+              <CardContent className="pt-0">
+                <div className="space-y-4">
                   {/* WhatsApp Info */}
-                  <div>
-                    <p className="text-sm font-medium text-gray-300">WhatsApp:</p>
-                    <p className="text-sm text-gray-400">{link.whatsapp_number}</p>
-                    <p className="text-sm text-gray-500 italic mt-1">
-                      "{link.whatsapp_message.substring(0, 100)}..."
+                  <div className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
+                    <p className="text-sm font-medium text-zinc-300 mb-1">WhatsApp:</p>
+                    <p className="text-sm text-zinc-100 font-mono">{link.whatsapp_number}</p>
+                    <p className="text-sm text-zinc-400 italic mt-2 line-clamp-2">
+                      "{link.whatsapp_message}"
                     </p>
                   </div>
 
@@ -315,17 +319,17 @@ export default function TrackingLinksPage() {
                   {(link.utm_source || link.utm_medium || link.utm_campaign) && (
                     <div className="flex gap-2 flex-wrap">
                       {link.utm_source && (
-                        <span className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded border border-blue-600/30">
+                        <span className="text-xs bg-blue-600/20 text-blue-300 px-2.5 py-1 rounded border border-blue-600/30">
                           source: {link.utm_source}
                         </span>
                       )}
                       {link.utm_medium && (
-                        <span className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded border border-green-600/30">
+                        <span className="text-xs bg-green-600/20 text-green-300 px-2.5 py-1 rounded border border-green-600/30">
                           medium: {link.utm_medium}
                         </span>
                       )}
                       {link.utm_campaign && (
-                        <span className="text-xs bg-purple-600/20 text-purple-400 px-2 py-1 rounded border border-purple-600/30">
+                        <span className="text-xs bg-purple-600/20 text-purple-300 px-2.5 py-1 rounded border border-purple-600/30">
                           campaign: {link.utm_campaign}
                         </span>
                       )}
@@ -333,16 +337,16 @@ export default function TrackingLinksPage() {
                   )}
 
                   {/* Stats */}
-                  <div className="flex gap-6 pt-3 border-t border-gray-700">
+                  <div className="flex gap-6 pt-3 border-t border-zinc-700">
                     <div className="flex items-center gap-2">
-                      <MousePointerClick className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-400">
+                      <MousePointerClick className="w-4 h-4 text-zinc-400" />
+                      <span className="text-sm text-zinc-300">
                         {(link as any).clicks?.length || 0} cliques
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-400">
+                      <TrendingUp className="w-4 h-4 text-zinc-400" />
+                      <span className="text-sm text-zinc-300">
                         0 conversões
                       </span>
                     </div>

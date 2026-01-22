@@ -55,7 +55,7 @@ export default function TrackingDashboard() {
   // Skeleton loader
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen bg-zinc-950 p-6 space-y-6">
         <div className="animate-pulse">
           <div className="h-10 bg-zinc-800 rounded w-1/3 mb-2"></div>
           <div className="h-6 bg-zinc-800 rounded w-1/2"></div>
@@ -70,14 +70,14 @@ export default function TrackingDashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="min-h-screen bg-zinc-950 p-6 space-y-8">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-zinc-100">
             Rastreamento & Atribuição
           </h1>
-          <p className="text-gray-400 mt-2">
+          <p className="text-zinc-400 mt-2">
             Módulo Tintim Killer - Rastreie cliques e atribua vendas
           </p>
         </div>
@@ -101,108 +101,108 @@ export default function TrackingDashboard() {
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Total de Cliques */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">
+            <CardTitle className="text-sm font-medium text-zinc-400">
               Total de Cliques
             </CardTitle>
             <MousePointerClick className="w-4 h-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-zinc-100">
               {stats.totalClicks.toLocaleString('pt-BR')}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-zinc-500 mt-2">
               Cliques rastreados em todos os links
             </p>
           </CardContent>
         </Card>
 
         {/* Eventos Disparados */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">
+            <CardTitle className="text-sm font-medium text-zinc-400">
               Eventos Disparados
             </CardTitle>
             <Zap className="w-4 h-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-zinc-100">
               {stats.totalEvents.toLocaleString('pt-BR')}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-zinc-500 mt-2">
               Total de eventos enviados ao Meta
             </p>
           </CardContent>
         </Card>
 
         {/* Conversões */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">
+            <CardTitle className="text-sm font-medium text-zinc-400">
               Conversões
             </CardTitle>
             <TrendingUp className="w-4 h-4 text-purple-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-zinc-100">
               {stats.conversions.toLocaleString('pt-BR')}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-zinc-500 mt-2">
               Vendas atribuídas a campanhas
             </p>
           </CardContent>
         </Card>
 
         {/* Links Ativos */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">
+            <CardTitle className="text-sm font-medium text-zinc-400">
               Links Ativos
             </CardTitle>
             <Link2 className="w-4 h-4 text-indigo-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-zinc-100">
               {stats.activeLinks.toLocaleString('pt-BR')}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-zinc-500 mt-2">
               Links de rastreamento ativos
             </p>
           </CardContent>
         </Card>
 
         {/* Eventos Pendentes */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">
+            <CardTitle className="text-sm font-medium text-zinc-400">
               Eventos Pendentes
             </CardTitle>
             <Clock className="w-4 h-4 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-zinc-100">
               {stats.pendingEvents.toLocaleString('pt-BR')}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-zinc-500 mt-2">
               Na fila para processamento
             </p>
           </CardContent>
         </Card>
 
         {/* Eventos com Falha */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">
+            <CardTitle className="text-sm font-medium text-zinc-400">
               Eventos com Falha
             </CardTitle>
             <AlertCircle className="w-4 h-4 text-red-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-zinc-100">
               {stats.failedEvents.toLocaleString('pt-BR')}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-zinc-500 mt-2">
               Requerem atenção
             </p>
           </CardContent>
@@ -212,45 +212,45 @@ export default function TrackingDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Card: Como Funciona */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader>
-            <CardTitle className="text-white">Como Funciona</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-zinc-100">Como Funciona</CardTitle>
+            <CardDescription className="text-zinc-400">
               Entenda o fluxo de rastreamento
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-400 font-bold text-sm">1</span>
+              <div className="w-8 h-8 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0 border border-blue-600/30">
+                <span className="text-blue-300 font-bold text-sm">1</span>
               </div>
               <div>
-                <h4 className="font-medium text-white">Crie um Link Rastreável</h4>
-                <p className="text-sm text-gray-400">
+                <h4 className="font-medium text-zinc-100">Crie um Link Rastreável</h4>
+                <p className="text-sm text-zinc-400">
                   Configure a mensagem do WhatsApp e parâmetros UTM
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-green-600/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-green-400 font-bold text-sm">2</span>
+              <div className="w-8 h-8 rounded-full bg-green-600/20 flex items-center justify-center flex-shrink-0 border border-green-600/30">
+                <span className="text-green-300 font-bold text-sm">2</span>
               </div>
               <div>
-                <h4 className="font-medium text-white">Compartilhe o Link</h4>
-                <p className="text-sm text-gray-400">
+                <h4 className="font-medium text-zinc-100">Compartilhe o Link</h4>
+                <p className="text-sm text-zinc-400">
                   Use em anúncios, redes sociais ou e-mail marketing
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-600/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-purple-400 font-bold text-sm">3</span>
+              <div className="w-8 h-8 rounded-full bg-purple-600/20 flex items-center justify-center flex-shrink-0 border border-purple-600/30">
+                <span className="text-purple-300 font-bold text-sm">3</span>
               </div>
               <div>
-                <h4 className="font-medium text-white">Rastreie Conversões</h4>
-                <p className="text-sm text-gray-400">
+                <h4 className="font-medium text-zinc-100">Rastreie Conversões</h4>
+                <p className="text-sm text-zinc-400">
                   Cada clique gera um código único que atribui vendas
                 </p>
               </div>
@@ -259,16 +259,16 @@ export default function TrackingDashboard() {
         </Card>
 
         {/* Card: Ações Rápidas */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader>
-            <CardTitle className="text-white">Ações Rápidas</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-zinc-100">Ações Rápidas</CardTitle>
+            <CardDescription className="text-zinc-400">
               Acesso direto às principais funcionalidades
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Link href="/admin/tracking/links">
-              <Button variant="outline" className="w-full justify-between bg-gray-700/50 border-gray-600 text-white hover:bg-gray-700">
+              <Button variant="outline" className="w-full justify-between bg-zinc-800 border-zinc-700 text-zinc-100 hover:bg-zinc-700">
                 <span className="flex items-center">
                   <Link2 className="w-4 h-4 mr-2" />
                   Gerenciar Links Rastreáveis

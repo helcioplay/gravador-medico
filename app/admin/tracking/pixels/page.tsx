@@ -104,20 +104,20 @@ export default function PixelsConfigPage() {
   };
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="min-h-screen bg-zinc-950 p-6 space-y-6 max-w-4xl mx-auto">
       {/* Cabeçalho */}
       <div>
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold text-zinc-100">
           Configuração do Meta Pixel
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-zinc-400 mt-2">
           Configure a integração com o Facebook/Meta Pixel para rastreamento de conversões
         </p>
       </div>
 
       {/* Status da Integração */}
       {integration && (
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
