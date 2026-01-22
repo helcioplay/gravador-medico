@@ -230,17 +230,41 @@ export async function createGroupConversation(
  */
 export async function getAdminUsers() {
   try {
+    console.log('🔍 [getAdminUsers] Iniciando busca de admins...')
+    
     const { data, error } = await supabaseAdmin
       .from('users')
       .select('id, name, email, avatar_url, role, is_online, last_seen_at')
       .eq('role', 'admin')
-      .order('is_online', { ascending: false }) // Online primeiro
       .order('name')
 
-    if (error) throw error
+    console.log('🔍 [getAdminUsers] Resultado da query:', { 
+      dataLength: data?.length, 
+      hasError: !!error,
+      data: data,
+      error: error 
+    })
+
+    if (error) {
+      console.error('❌ Erro ao buscar admins:', error)
+      
+      // Se der erro (ex: coluna is_online não existe), tenta sem esses campos
+      const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+        .from('users')
+        .select('id, name, email, avatar_url, role')
+        .eq('role', 'admin')
+        .order('name')
+      
+      if (fallbackError) throw fallbackError
+      
+      console.log('✅ Admins carregados (sem status online):', fallbackData?.length)
+      return fallbackData || []
+    }
+    
+    console.log('✅ Admins carregados (com status online):', data?.length)
     return data || []
   } catch (error) {
-    console.error('❌ Erro ao buscar admins:', error)
+    console.error('❌ Erro fatal ao buscar admins:', error)
     return []
   }
 }

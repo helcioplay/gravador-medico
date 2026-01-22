@@ -247,8 +247,18 @@ export default function AdminChatPage() {
   }
 
   const loadAdminUsers = async () => {
+    console.log('🔍 [loadAdminUsers] Buscando admins...')
+    console.log('🔍 [loadAdminUsers] Current User ID:', currentUserId)
+    
     const users = await getAdminUsers()
-    setAdminUsers(users.filter(u => u.id !== currentUserId))
+    
+    console.log('🔍 [loadAdminUsers] Admins retornados:', users.length, users)
+    
+    const filtered = users.filter(u => u.id !== currentUserId)
+    
+    console.log('🔍 [loadAdminUsers] Admins filtrados (sem usuário atual):', filtered.length, filtered)
+    
+    setAdminUsers(filtered)
     setShowNewChatModal(true)
   }
 
