@@ -148,6 +148,12 @@ export async function getWhatsAppMessages(
  * Cria uma nova mensagem (ou atualiza se já existir pelo message_id)
  */
 export async function upsertWhatsAppMessage(input: CreateMessageInput): Promise<WhatsAppMessage> {
+  console.log('💾 [upsertWhatsAppMessage] Recebendo input:', {
+    message_id: input.message_id,
+    from_me: input.from_me,
+    content: input.content?.substring(0, 50)
+  })
+  
   const { data, error } = await supabaseAdmin
     .from('whatsapp_messages')
     .upsert(
@@ -175,6 +181,12 @@ export async function upsertWhatsAppMessage(input: CreateMessageInput): Promise<
     console.error('❌ Erro ao upsert mensagem:', error)
     throw error
   }
+
+  console.log('💾 [upsertWhatsAppMessage] Mensagem salva no banco:', {
+    id: data.id,
+    from_me: data.from_me,
+    message_id: data.message_id
+  })
 
   return data
 }

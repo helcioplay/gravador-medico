@@ -282,6 +282,14 @@ export async function POST(request: NextRequest) {
     // ================================================================
     // PASSO 3: INSERT da mensagem (agora o FK existe)
     // ================================================================
+    
+    // 🔧 CORREÇÃO: Garantir que from_me seja boolean (pode vir como string ou outro tipo)
+    const fromMeValue = (payload.data.key as any).fromMe
+    const fromMeBoolean = fromMeValue === true || fromMeValue === 'true' || fromMeValue === 1
+    
+    console.log('🔍 [DEBUG CONVERSÃO] from_me original:', fromMeValue, typeof fromMeValue)
+    console.log('🔍 [DEBUG CONVERSÃO] from_me convertido:', fromMeBoolean, typeof fromMeBoolean)
+    
     const messageInput: CreateMessageInput = {
       message_id: key.id,
       remote_jid: key.remoteJid,
@@ -289,13 +297,13 @@ export async function POST(request: NextRequest) {
       message_type: type,
       media_url,
       caption,
-      from_me: key.fromMe,
+      from_me: fromMeBoolean,
       timestamp: new Date(messageTimestamp * 1000).toISOString(),
       status: status as any,
       raw_payload: payload.data
     }
     
-    console.log('🔍 [DEBUG SAVE] Salvando mensagem com from_me:', messageInput.from_me)
+    console.log('🔍 [DEBUG SAVE] Salvando mensagem com from_me:', messageInput.from_me, typeof messageInput.from_me)
 
     const savedMessage = await upsertWhatsAppMessage(messageInput)
     console.log(`✅ Mensagem salva: ${savedMessage.id}, from_me final: ${savedMessage.from_me}`)
