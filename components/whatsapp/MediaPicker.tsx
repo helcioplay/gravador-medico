@@ -77,6 +77,8 @@ export default function MediaPicker({
 }: MediaPickerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('emoji')
+  
+  console.log('🎨 MediaPicker renderizado! isOpen:', isOpen, 'disabled:', disabled)
 
   const handleEmojiClick = (emoji: string) => {
     onEmojiSelect(emoji)
