@@ -7,6 +7,7 @@ import ConversionFunnel from '@/components/dashboard/ConversionFunnel'
 import OperationalHealth from '@/components/dashboard/OperationalHealth'
 import RealtimeFeed from '@/components/dashboard/RealtimeFeed'
 import { RealtimeVisitors } from '@/components/dashboard/RealtimeVisitors'
+import { FraudAnalysisCard } from '@/components/dashboard/FraudAnalysisCard'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { RefreshCw, Download, MousePointerClick, Link2, Zap, TrendingUp, ArrowRight } from 'lucide-react'
 
@@ -314,6 +315,9 @@ Relatório gerado automaticamente pelo Gravador Médico
         failedPayments: { count: 0, totalValue: 0, reasons: [] },
         chargebacks: { count: 0, totalValue: 0 }
       }} loading={loading} />
+
+      {/* Card de Análise Antifraude */}
+      <FraudAnalysisCard />
 
       {/* Layout Grid: Gráfico Principal (66%) + Feed Realtime (33%) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

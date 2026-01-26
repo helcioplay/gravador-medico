@@ -137,12 +137,24 @@ export default function CRMPage() {
   }, [startDate, endDate])
 
   useEffect(() => {
-    // Realtime para novas vendas
+    // Realtime para novas vendas e atualizações
     const channel = supabase
       .channel('sales-changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sales' }, (payload: any) => {
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'sales' 
+      }, (payload: any) => {
         console.log('🆕 Nova venda detectada, criando lead...')
         createLeadFromSale(payload.new)
+      })
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'sales' 
+      }, (payload: any) => {
+        console.log('🔄 Venda atualizada, atualizando lead...')
+        updateLeadFromSale(payload.new)
       })
       .subscribe()
 
@@ -214,6 +226,26 @@ export default function CRMPage() {
     }
     
     setLeads(prev => [newLead, ...prev])
+  }
+
+  const updateLeadFromSale = async (sale: any) => {
+    // Atualizar lead existente quando a venda mudar de status
+    setLeads(prev => 
+      prev.map(lead => 
+        lead.id === sale.id 
+          ? { 
+              ...lead, 
+              value: sale.total_amount,
+              updated_at: sale.updated_at || new Date().toISOString()
+            } 
+          : lead
+      )
+    )
+    
+    // Se o pedido foi aprovado, mover para "won"
+    if (['paid', 'approved'].includes(sale.status)) {
+      await moveLeadToStage(sale.id, 'won')
+    }
   }
 
   const moveLeadToStage = async (leadId: string, newStage: string) => {

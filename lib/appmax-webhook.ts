@@ -35,11 +35,17 @@ const EVENT_STATUS_MAP: Record<string, { status: string; failure_reason?: string
   'pedido estornado': { status: 'refunded', failure_reason: 'Estornado' },
   'pedido chargeback em tratamento': { status: 'chargeback', failure_reason: 'Chargeback em analise' },
   'pedido chargeback ganho': { status: 'approved' },
-  'upsell pago': { status: 'paid' }
+  'upsell pago': { status: 'paid' },
+  // Status de Análise Antifraude (NOVO)
+  'analise antifraude': { status: 'fraud_analysis' },
+  'análise antifraude': { status: 'fraud_analysis' },
+  'order.fraud_analysis': { status: 'fraud_analysis' },
+  'pendente': { status: 'fraud_analysis' } // Cartão de crédito pendente = análise antifraude
 }
 
 const SUCCESS_STATUSES = new Set(['approved', 'paid', 'completed'])
 const FAILED_STATUSES = new Set(['refused', 'rejected', 'cancelled', 'expired', 'failed', 'chargeback'])
+const PENDING_STATUSES = new Set(['pending', 'fraud_analysis']) // NOVO: Inclui análise antifraude
 
 const STATUS_ALIASES: Record<string, { status: string; failure_reason?: string }> = {
   approved: { status: 'approved' },
@@ -51,6 +57,12 @@ const STATUS_ALIASES: Record<string, { status: string; failure_reason?: string }
   pending: { status: 'pending' },
   pendente: { status: 'pending' },
   processing: { status: 'pending' },
+  // Análise Antifraude (NOVO)
+  fraud_analysis: { status: 'fraud_analysis' },
+  analyzing_fraud: { status: 'fraud_analysis' },
+  'analise antifraude': { status: 'fraud_analysis' },
+  'análise antifraude': { status: 'fraud_analysis' },
+  // Falhas
   refused: { status: 'refused', failure_reason: 'Pagamento recusado' },
   rejected: { status: 'refused', failure_reason: 'Pagamento recusado' },
   failed: { status: 'refused', failure_reason: 'Pagamento recusado' },

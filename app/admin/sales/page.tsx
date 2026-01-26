@@ -42,7 +42,7 @@ interface Sale {
   coupon_discount?: number
 }
 
-type StatusFilter = 'all' | 'paid' | 'pending' | 'failed' | 'refunded'
+type StatusFilter = 'all' | 'paid' | 'pending' | 'fraud_analysis' | 'failed' | 'refunded'
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
@@ -128,6 +128,8 @@ export default function SalesPage() {
             return ['paid', 'approved'].includes(sale.status)
           case 'pending':
             return ['pending', 'processing'].includes(sale.status)
+          case 'fraud_analysis':
+            return sale.status === 'fraud_analysis'
           case 'failed':
             return ['canceled', 'cancelado', 'cancelled', 'refused', 'rejected', 'failed', 'denied', 'expired', 'chargeback'].includes(sale.status)
           case 'refunded':
@@ -144,6 +146,14 @@ export default function SalesPage() {
 
   const getStatusConfig = (status: string, failureReason?: string) => {
     const normalizedStatus = status.toLowerCase()
+
+    if (normalizedStatus === 'fraud_analysis') {
+      return {
+        label: 'Análise Antifraude',
+        className: 'bg-orange-500/20 text-orange-400 border-orange-500/30 font-semibold',
+        icon: AlertTriangle
+      }
+    }
 
     if (normalizedStatus === 'expired') {
       return {
@@ -224,6 +234,7 @@ export default function SalesPage() {
     all: sales.length,
     paid: sales.filter(s => ['paid', 'approved'].includes(s.status)).length,
     pending: sales.filter(s => ['pending', 'processing'].includes(s.status)).length,
+    fraud_analysis: sales.filter(s => s.status === 'fraud_analysis').length,
     failed: sales.filter(s => ['canceled', 'cancelado', 'cancelled', 'refused', 'rejected', 'failed', 'denied', 'expired', 'chargeback'].includes(s.status)).length,
     refunded: sales.filter(s => ['refunded', 'reversed'].includes(s.status)).length,
   }
@@ -266,6 +277,7 @@ export default function SalesPage() {
           { key: 'all', label: 'Todas' },
           { key: 'paid', label: 'Pagas' },
           { key: 'pending', label: 'Pendentes' },
+          { key: 'fraud_analysis', label: '🛡️ Análise Antifraude' },
           { key: 'failed', label: 'Recusadas' },
           { key: 'refunded', label: 'Estornadas' },
         ].map(({ key, label }) => (
