@@ -68,7 +68,34 @@ export async function handleMercadoPagoWebhookEnterprise(request: NextRequest) {
     console.log(`🔍 Processando pagamento: ${paymentId}`)
 
     // =====================================================
-    // 3️⃣ BUSCAR DETALHES COMPLETOS (ENRIQUECIMENTO)
+    // 3️⃣ DETECTAR WEBHOOK DE TESTE (MP Simulator)
+    // =====================================================
+    
+    // Mercado Pago envia IDs de teste como "123456" no simulador
+    const isTestWebhook = paymentId === '123456' || paymentId.toString().length < 10
+    
+    if (isTestWebhook) {
+      console.log('✅ Webhook de teste detectado - respondendo com sucesso')
+      
+      if (logEntry) {
+        await supabaseAdmin
+          .from('webhook_logs')
+          .update({ 
+            processed: true, 
+            processed_at: new Date().toISOString(),
+            last_error: 'Test webhook - não processado'
+          })
+          .eq('id', logEntry.id)
+      }
+      
+      return { 
+        status: 200, 
+        message: 'Test webhook received successfully' 
+      }
+    }
+
+    // =====================================================
+    // 4️⃣ BUSCAR DETALHES COMPLETOS (ENRIQUECIMENTO)
     // =====================================================
     
     let payment
@@ -81,7 +108,7 @@ export async function handleMercadoPagoWebhookEnterprise(request: NextRequest) {
     }
 
     // =====================================================
-    // 4️⃣ RACE CONDITION FIX (Buscar pedido com retry)
+    // 5️⃣ RACE CONDITION FIX (Buscar pedido com retry)
     // =====================================================
     
     let order = null
@@ -136,7 +163,7 @@ export async function handleMercadoPagoWebhookEnterprise(request: NextRequest) {
     }
 
     // =====================================================
-    // 5️⃣ ATUALIZAR PEDIDO COM DADOS ENRIQUECIDOS
+    // 6️⃣ ATUALIZAR PEDIDO COM DADOS ENRIQUECIDOS
     // =====================================================
     
     const newStatus = mapMPStatusToOrderStatus(payment.status)
@@ -159,7 +186,7 @@ export async function handleMercadoPagoWebhookEnterprise(request: NextRequest) {
     console.log('✅ Pedido atualizado com sucesso')
 
     // =====================================================
-    // 6️⃣ ADICIONAR À FILA DE PROVISIONAMENTO (se aprovado)
+    // 7️⃣ ADICIONAR À FILA DE PROVISIONAMENTO (se aprovado)
     // =====================================================
     
     if (payment.status === 'approved') {
