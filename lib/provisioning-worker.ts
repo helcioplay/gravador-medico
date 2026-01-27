@@ -140,18 +140,24 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
         })
 
         // =====================================================
-        // 5️⃣ ENVIAR EMAIL (TODO: Implementar)
+        // 5️⃣ ENVIAR EMAIL COM CREDENCIAIS
         // =====================================================
         
         console.log('📧 Enviando email de boas-vindas...')
         
-        // TODO: Implementar envio de email
-        // await sendWelcomeEmail({
-        //   to: order.customer_email,
-        //   name: order.customer_name,
-        //   password: password,
-        //   loginUrl: 'https://gravadormedico.lovable.app'
-        // })
+        const { sendWelcomeEmail } = await import('./email')
+        
+        await sendWelcomeEmail({
+          to: order.customer_email,
+          customerName: order.customer_name,
+          userEmail: order.customer_email,
+          userPassword: password,
+          orderId: order.id.toString(),
+          orderValue: parseFloat(order.order_value),
+          paymentMethod: order.payment_gateway === 'mercadopago' ? 'Mercado Pago' : 'AppMax'
+        })
+        
+        console.log('✅ Email enviado com sucesso!')
 
         // =====================================================
         // 6️⃣ FINALIZAR: provisioning → active
