@@ -31,12 +31,18 @@ export async function POST(request: NextRequest) {
     const result = await handleMercadoPagoWebhookEnterprise(request)
 
     // =====================================================
-    // 3️⃣ RETORNAR RESPOSTA
+    // 3️⃣ RETORNAR RESPOSTA SIMPLES (MP espera 200 limpo)
     // =====================================================
     
+    // Mercado Pago espera apenas HTTP 200, resposta simples
+    if (result.status === 200) {
+      return new NextResponse('OK', { status: 200 })
+    }
+    
+    // Para outros status, retornar com JSON
     return NextResponse.json(
       { 
-        success: result.status === 200,
+        success: false,
         message: result.message 
       },
       { status: result.status }
