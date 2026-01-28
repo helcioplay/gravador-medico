@@ -60,6 +60,16 @@ export async function POST(request: NextRequest) {
 
     const { customer, amount, payment_method, mpToken, appmax_data, idempotencyKey, coupon_code, discount } = body
 
+    // 🔥 LOG DOS DADOS RECEBIDOS
+    console.log('📦 Dados recebidos no checkout:', JSON.stringify({
+      amount,
+      payment_method,
+      has_mpToken: !!mpToken,
+      has_appmax_data: !!appmax_data,
+      customer_email: customer.email,
+      idempotencyKey
+    }, null, 2))
+
     // =====================================================
     // 2️⃣ CHECK DE IDEMPOTÊNCIA
     // =====================================================
@@ -130,8 +140,50 @@ export async function POST(request: NextRequest) {
     if (payment_method === 'credit_card' && mpToken) {
       try {
         console.log('💳 [1/2] Tentando Mercado Pago...')
+        console.log('🔐 Token MP recebido:', mpToken?.substring(0, 20) + '...')
         
         const mpStartTime = Date.now()
+        
+        // Montar payload
+        const mpPayload = {
+          token: mpToken,
+          transaction_amount: amount,
+          description: 'Gravador Médico - Acesso Vitalício',
+          payment_method_id: 'credit_card',
+          installments: 1,
+          payer: {
+            email: customer.email,
+            first_name: customer.name?.split(' ')[0] || '',
+            last_name: customer.name?.split(' ').slice(1).join(' ') || '',
+            identification: {
+              type: customer.documentType || 'CPF', // CPF ou CNPJ
+              number: customer.cpf.replace(/\D/g, '')
+            }
+          },
+          external_reference: order.id, // ✅ ADICIONADO: Referência para cruzar dados
+          notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
+          statement_descriptor: 'GRAVADOR MEDICO',
+          additional_info: {
+            payer: {
+              first_name: customer.name?.split(' ')[0] || '',
+              last_name: customer.name?.split(' ').slice(1).join(' ') || '',
+              phone: {
+                number: customer.phone?.replace(/\D/g, '') || ''
+              }
+            }
+          }
+        }
+
+        // 🔥 LOG DETALHADO DO PAYLOAD
+        console.log('📦 PAYLOAD ENVIADO PARA MERCADO PAGO:', JSON.stringify({
+          transaction_amount: mpPayload.transaction_amount,
+          payment_method_id: mpPayload.payment_method_id,
+          installments: mpPayload.installments,
+          payer_email: mpPayload.payer.email,
+          payer_cpf: mpPayload.payer.identification.number,
+          external_reference: mpPayload.external_reference,
+          has_token: !!mpPayload.token
+        }, null, 2))
         
         // Criar AbortController para timeout de 30 segundos
         const controller = new AbortController()
@@ -145,34 +197,7 @@ export async function POST(request: NextRequest) {
               'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
               'X-Idempotency-Key': idempotencyKey // ✅ Idempotência também no gateway
             },
-            body: JSON.stringify({
-              token: mpToken,
-              transaction_amount: amount,
-              description: 'Gravador Médico - Acesso Vitalício',
-              payment_method_id: 'credit_card',
-              installments: 1,
-              payer: {
-                email: customer.email,
-                first_name: customer.name?.split(' ')[0] || '',
-                last_name: customer.name?.split(' ').slice(1).join(' ') || '',
-                identification: {
-                  type: customer.documentType || 'CPF', // CPF ou CNPJ
-                  number: customer.cpf.replace(/\D/g, '')
-                }
-              },
-              external_reference: order.id, // ✅ ADICIONADO: Referência para cruzar dados
-              notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
-              statement_descriptor: 'GRAVADOR MEDICO',
-              additional_info: {
-                payer: {
-                  first_name: customer.name?.split(' ')[0] || '',
-                  last_name: customer.name?.split(' ').slice(1).join(' ') || '',
-                  phone: {
-                    number: customer.phone?.replace(/\D/g, '') || ''
-                  }
-                }
-              }
-            }),
+            body: JSON.stringify(mpPayload),
             signal: controller.signal
           })
           
@@ -181,7 +206,22 @@ export async function POST(request: NextRequest) {
           const mpResult = await mpResponse.json()
         const mpResponseTime = Date.now() - mpStartTime
 
-        console.log(`📊 Mercado Pago: ${mpResult.status} (${mpResponseTime}ms)`)
+        // 🔥 LOG DETALHADO DA RESPOSTA
+        console.log(`📊 RESPOSTA DO MERCADO PAGO (${mpResponseTime}ms):`, JSON.stringify({
+          status: mpResult.status,
+          status_detail: mpResult.status_detail,
+          payment_id: mpResult.id,
+          http_status: mpResponse.status,
+          message: mpResult.message,
+          cause: mpResult.cause
+        }, null, 2))
+
+        // 🔥 SE ERRO, LOG COMPLETO
+        if (!mpResponse.ok || mpResult.status !== 'approved') {
+          console.error('❌ MERCADO PAGO RETORNOU ERRO OU RECUSA:')
+          console.error('HTTP Status:', mpResponse.status)
+          console.error('Response completa:', JSON.stringify(mpResult, null, 2))
+        }
 
         // Registrar tentativa em payment_attempts
         await supabaseAdmin.from('payment_attempts').insert({
@@ -263,9 +303,15 @@ export async function POST(request: NextRequest) {
         } catch (fetchError: any) {
           clearTimeout(timeoutId)
           
+          // 🔥 LOG DETALHADO DO ERRO DE REDE
+          console.error('❌ ERRO DE REDE/FETCH NO MERCADO PAGO:')
+          console.error('Nome do erro:', fetchError.name)
+          console.error('Mensagem:', fetchError.message)
+          console.error('Stack:', fetchError.stack)
+          
           // Tratar timeout especificamente
           if (fetchError.name === 'AbortError') {
-            console.error('⏱️ Timeout: Mercado Pago não respondeu em 30s')
+            console.error('⏱️ TIMEOUT: Mercado Pago não respondeu em 30s')
             throw new Error('Timeout: Mercado Pago não respondeu em 30s')
           }
           
@@ -274,7 +320,17 @@ export async function POST(request: NextRequest) {
         }
 
       } catch (mpError: any) {
-        console.error('❌ Erro crítico no Mercado Pago:', mpError.message)
+        // 🔥 LOG DETALHADO DO ERRO GERAL
+        console.error('❌ ERRO CRÍTICO NO MERCADO PAGO:')
+        console.error('Tipo:', mpError.constructor.name)
+        console.error('Mensagem:', mpError.message)
+        console.error('Stack completa:', mpError.stack)
+        
+        // Se for erro HTTP, tentar extrair detalhes
+        if (mpError.response) {
+          console.error('HTTP Status:', mpError.response.status)
+          console.error('HTTP Data:', mpError.response.data)
+        }
         
         // Registrar erro
         await supabaseAdmin.from('payment_attempts').insert({
@@ -379,6 +435,12 @@ export async function POST(request: NextRequest) {
     if (appmax_data) {
       try {
         console.log('💳 [2/2] Tentando AppMax (fallback)...')
+        console.log('🔄 FALLBACK ACIONADO - Mercado Pago falhou ou recusou')
+        console.log('📦 Dados AppMax recebidos:', {
+          has_card_data: !!appmax_data.card_data,
+          payment_method: appmax_data.payment_method,
+          order_bumps_count: appmax_data.order_bumps?.length || 0
+        })
         
         const appmaxStartTime = Date.now()
 

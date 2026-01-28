@@ -57,41 +57,50 @@ export async function saveAbandonedCart(data: {
       status = existing.status
     }
 
-    const cartData = {
-      customer_name: data.customer_name,
-      customer_email: data.customer_email,
-      customer_phone: data.customer_phone,
-      customer_cpf: data.customer_cpf,
-      document_type: data.document_type || 'CPF',
-      step: data.step,
-      status: status,
-      product_id: data.product_id,
-      order_bumps: data.order_bumps || null,
-      discount_code: data.discount_code,
-      cart_value: data.cart_value,
+    // ✅ Construir objeto APENAS com campos que têm valor
+    // Isso evita erro 400 se algum campo não existir no schema
+    const cartData: any = {
       session_id: sessionId,
-      // TODO: Adicionar UTM depois que as colunas forem criadas no banco
-      // utm_source: data.utm_source || sessionStorage.getItem('utm_source'),
-      // utm_medium: data.utm_medium || sessionStorage.getItem('utm_medium'),
-      // utm_campaign: data.utm_campaign || sessionStorage.getItem('utm_campaign'),
+      status: status,
     }
+
+    // Adicionar campos opcionais apenas se existirem
+    if (data.customer_name) cartData.customer_name = data.customer_name
+    if (data.customer_email) cartData.customer_email = data.customer_email
+    if (data.customer_phone) cartData.customer_phone = data.customer_phone
+    if (data.customer_cpf) cartData.customer_cpf = data.customer_cpf
+    if (data.document_type) cartData.document_type = data.document_type
+    if (data.step) cartData.step = data.step
+    if (data.product_id) cartData.product_id = data.product_id
+    if (data.order_bumps) cartData.order_bumps = data.order_bumps
+    if (data.discount_code) cartData.discount_code = data.discount_code
+    if (data.cart_value) cartData.cart_value = data.cart_value
+    if (data.utm_source) cartData.utm_source = data.utm_source
+    if (data.utm_medium) cartData.utm_medium = data.utm_medium
+    if (data.utm_campaign) cartData.utm_campaign = data.utm_campaign
 
     if (existing?.id) {
       // Atualizar carrinho existente
+      console.log('💾 Atualizando carrinho existente:', existing.id)
+      
       const { error } = await supabase
         .from('abandoned_carts')
         .update(cartData)
         .eq('id', existing.id)
 
       if (error) {
-        console.error('Erro ao atualizar carrinho abandonado:', error)
-        return null
+        console.error('❌ Erro ao atualizar carrinho abandonado:', error)
+        console.error('📦 Dados que tentamos enviar:', cartData)
+        // NÃO retorna null - não bloqueia o fluxo
+        return existing.id
       }
 
       console.log('✅ Carrinho atualizado:', existing.id)
       return existing.id
     } else {
       // Criar novo carrinho
+      console.log('📝 Criando novo carrinho abandonado')
+      
       const { data: newCart, error } = await supabase
         .from('abandoned_carts')
         .insert(cartData)
@@ -99,7 +108,9 @@ export async function saveAbandonedCart(data: {
         .single()
 
       if (error) {
-        console.error('Erro ao criar carrinho abandonado:', error)
+        console.error('❌ Erro ao criar carrinho abandonado:', error)
+        console.error('📦 Dados que tentamos enviar:', cartData)
+        // NÃO retorna null - não bloqueia o fluxo
         return null
       }
 
@@ -111,7 +122,8 @@ export async function saveAbandonedCart(data: {
       return newCart.id
     }
   } catch (error) {
-    console.error('Erro ao salvar carrinho abandonado:', error)
+    console.error('❌ Erro crítico ao salvar carrinho abandonado:', error)
+    // NÃO lança erro - não bloqueia o checkout
     return null
   }
 }
