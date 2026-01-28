@@ -90,80 +90,164 @@ async function sendWelcomeEmail(params) {
   try {
     console.log(`  📧 Enviando e-mail para: ${params.to}`);
     
+    // Formatar ID do pedido
+    const formatOrderId = (id) => {
+      if (id.includes('-')) {
+        return id.split('-')[0].toUpperCase();
+      }
+      if (id.startsWith('manual-')) {
+        return id.replace('manual-', '').replace(/-/g, ' ').toUpperCase();
+      }
+      return id.substring(0, 8).toUpperCase();
+    };
+    
+    // Formatar método de pagamento
+    const formatPaymentMethod = (method) => {
+      const methods = {
+        'pix': 'PIX',
+        'credit_card': 'Cartão de Crédito',
+        'debit_card': 'Cartão de Débito',
+        'boleto': 'Boleto Bancário',
+        'appmax': 'Cartão de Crédito',
+        'mercadopago': 'Mercado Pago',
+      };
+      return methods[method?.toLowerCase()] || method || 'PIX';
+    };
+    
+    // Cores do Design System
+    const colors = {
+      primary: '#16A085',
+      accent: '#2EAE9A',
+      background: '#F7F9FA',
+      card: '#FFFFFF',
+      textPrimary: '#1A2E38',
+      textSecondary: '#5C7080',
+      border: '#D8DEE4',
+      success: '#16A34A',
+      muted: '#E8F8F5',
+    };
+    
     const { data, error } = await resend.emails.send({
       from: 'Gravador Médico <noreply@gravadormedico.com.br>',
       to: params.to,
-      subject: '🎉 Bem-vindo ao Gravador Médico - Seus Dados de Acesso',
+      subject: '�️ Bem-vindo ao Gravador Médico - Seus Dados de Acesso',
       html: `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bem-vindo ao Gravador Médico</title>
 </head>
-<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px;">
-  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-    <!-- Header -->
-    <div style="background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%); padding: 40px 20px; text-align: center;">
-      <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Bem-vindo ao Gravador Médico!</h1>
-      <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 16px;">Sua compra foi aprovada com sucesso</p>
-    </div>
-    
-    <!-- Content -->
-    <div style="padding: 40px 30px;">
-      <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
-        Olá <strong>${params.customerName}</strong>,
-      </p>
-      
-      <p style="font-size: 16px; color: #374151; margin-bottom: 30px;">
-        Parabéns pela sua compra! Seu acesso ao Gravador Médico está pronto.
-      </p>
-      
-      <!-- Credentials Box -->
-      <div style="background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border-radius: 12px; padding: 25px; margin-bottom: 30px; border: 1px solid #C7D2FE;">
-        <h3 style="margin: 0 0 15px 0; color: #4338CA; font-size: 18px;">🔐 Seus Dados de Acesso</h3>
-        
-        <div style="margin-bottom: 15px;">
-          <p style="margin: 0; color: #6B7280; font-size: 14px;">E-mail:</p>
-          <p style="margin: 5px 0 0 0; font-family: monospace; background: white; padding: 10px; border-radius: 6px; color: #1F2937; font-size: 14px; border: 1px solid #E5E7EB;">
-            ${params.userEmail}
-          </p>
-        </div>
-        
-        <div>
-          <p style="margin: 0; color: #6B7280; font-size: 14px;">Senha Temporária:</p>
-          <p style="margin: 5px 0 0 0; font-family: monospace; background: white; padding: 10px; border-radius: 6px; color: #1F2937; font-size: 14px; border: 1px solid #E5E7EB;">
-            ${params.userPassword}
-          </p>
-        </div>
-      </div>
-      
-      <!-- CTA Button -->
-      <div style="text-align: center; margin-bottom: 30px;">
-        <a href="https://gravador-medico.lovable.app/login" style="display: inline-block; background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%); color: white; padding: 15px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-          Acessar o Sistema →
-        </a>
-      </div>
-      
-      <!-- Order Info -->
-      <div style="background: #F9FAFB; border-radius: 8px; padding: 20px; border: 1px solid #E5E7EB;">
-        <p style="margin: 0 0 10px 0; color: #6B7280; font-size: 14px;">Detalhes do Pedido:</p>
-        <p style="margin: 0; color: #1F2937; font-size: 14px;">
-          <strong>Pedido:</strong> ${params.orderId}<br>
-          <strong>Valor:</strong> R$ ${params.orderValue.toFixed(2)}<br>
-          <strong>Forma de Pagamento:</strong> ${params.paymentMethod === 'pix' ? 'PIX' : 'Cartão de Crédito'}
-        </p>
-      </div>
-    </div>
-    
-    <!-- Footer -->
-    <div style="background: #F9FAFB; padding: 20px 30px; text-align: center; border-top: 1px solid #E5E7EB;">
-      <p style="margin: 0; color: #6B7280; font-size: 13px;">
-        Dúvidas? Responda este e-mail ou acesse nosso suporte.<br>
-        © 2026 Gravador Médico - Todos os direitos reservados
-      </p>
-    </div>
-  </div>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: ${colors.background}; margin: 0; padding: 0;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.background}; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color: ${colors.card}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px -4px rgba(22, 160, 133, 0.15);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); padding: 40px 30px; text-align: center;">
+              <div style="display: inline-block; background-color: rgba(255,255,255,0.2); border-radius: 50%; width: 60px; height: 60px; line-height: 60px; font-size: 30px; margin-bottom: 15px;">
+                🎙️
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 700;">Bem-vindo ao Gravador Médico!</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 12px 0 0 0; font-size: 15px;">Sua compra foi aprovada com sucesso ✨</p>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="color: ${colors.textPrimary}; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                Olá, <strong>${params.customerName}</strong>! 👋
+              </p>
+              
+              <p style="color: ${colors.textSecondary}; font-size: 15px; line-height: 1.7; margin: 0 0 30px 0;">
+                Parabéns pela sua compra! Seu acesso ao <strong style="color: ${colors.textPrimary};">Gravador Médico</strong> já está liberado. Use as credenciais abaixo para fazer login:
+              </p>
+
+              <!-- Credentials Box -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.muted}; border: 1px solid ${colors.border}; border-radius: 10px; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 25px;">
+                    <p style="color: ${colors.primary}; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 20px 0; font-weight: 700;">
+                      🔐 Seus Dados de Acesso
+                    </p>
+                    
+                    <div style="margin-bottom: 15px;">
+                      <p style="color: ${colors.textSecondary}; font-size: 13px; margin: 0 0 6px 0; font-weight: 500;">E-mail:</p>
+                      <p style="color: ${colors.textPrimary}; font-size: 15px; font-weight: 600; margin: 0; font-family: monospace; background: ${colors.card}; padding: 12px 14px; border-radius: 8px; border: 1px solid ${colors.border};">
+                        ${params.userEmail}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <p style="color: ${colors.textSecondary}; font-size: 13px; margin: 0 0 6px 0; font-weight: 500;">Senha Temporária:</p>
+                      <p style="color: ${colors.textPrimary}; font-size: 15px; font-weight: 600; margin: 0; font-family: monospace; background: ${colors.card}; padding: 12px 14px; border-radius: 8px; border: 1px solid ${colors.border};">
+                        ${params.userPassword}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td align="center">
+                    <a href="https://gravador-medico.lovable.app/login" style="display: inline-block; background-color: ${colors.primary}; color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 10px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 14px rgba(22, 160, 133, 0.35);">
+                      Acessar o Sistema →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Order Details -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.background}; border-radius: 10px; border: 1px solid ${colors.border};">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="color: ${colors.textSecondary}; font-size: 13px; margin: 0 0 12px 0; font-weight: 500;">Detalhes da Compra:</p>
+                    <table role="presentation" width="100%" cellpadding="6" cellspacing="0">
+                      <tr>
+                        <td style="color: ${colors.textSecondary}; font-size: 14px;">Produto:</td>
+                        <td align="right" style="color: ${colors.textPrimary}; font-size: 14px; font-weight: 600;">Gravador Médico</td>
+                      </tr>
+                      <tr>
+                        <td style="color: ${colors.textSecondary}; font-size: 14px;">Pedido:</td>
+                        <td align="right" style="color: ${colors.textPrimary}; font-size: 14px; font-weight: 600;">#${formatOrderId(params.orderId)}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: ${colors.textSecondary}; font-size: 14px;">Valor:</td>
+                        <td align="right" style="color: ${colors.success}; font-size: 14px; font-weight: 700;">R$ ${params.orderValue.toFixed(2)}</td>
+                      </tr>
+                      <tr>
+                        <td style="color: ${colors.textSecondary}; font-size: 14px;">Pagamento:</td>
+                        <td align="right" style="color: ${colors.textPrimary}; font-size: 14px; font-weight: 600;">${formatPaymentMethod(params.paymentMethod)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: ${colors.background}; padding: 25px 30px; text-align: center; border-top: 1px solid ${colors.border};">
+              <p style="color: ${colors.textSecondary}; font-size: 13px; margin: 0 0 10px 0; line-height: 1.6;">
+                Dúvidas? Responda este e-mail ou fale conosco no WhatsApp.
+              </p>
+              <p style="color: ${colors.textSecondary}; font-size: 12px; margin: 0; opacity: 0.8;">
+                © 2026 Gravador Médico — Todos os direitos reservados
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
       `
