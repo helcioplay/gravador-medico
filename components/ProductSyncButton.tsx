@@ -19,7 +19,8 @@ export function ProductSyncButton({ onSyncComplete }: ProductSyncButtonProps) {
     setStatus('idle')
 
     try {
-      const res = await fetch('/api/admin/products/sync', {
+      // Usar a nova rota que limpa produtos fake e sincroniza os reais
+      const res = await fetch('/api/admin/products/fix-real', {
         method: 'POST',
         credentials: 'include'
       })
@@ -30,7 +31,7 @@ export function ProductSyncButton({ onSyncComplete }: ProductSyncButtonProps) {
 
       setStatus('success')
       
-      toast(`✅ ${data.message || `${data.discovered_count} produtos sincronizados`}`)
+      toast(`✅ ${data.message || 'Produtos sincronizados com sucesso!'}`)
 
       // Callback para recarregar a lista de produtos
       if (onSyncComplete) {
