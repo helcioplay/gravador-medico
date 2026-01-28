@@ -36,6 +36,7 @@ import {
   Building2,
   Loader2,
   Search,
+  ShieldCheck,
 } from "lucide-react"
 
 export default function CheckoutPage() {
@@ -1465,13 +1466,14 @@ export default function CheckoutPage() {
                       </motion.div>
                     )}
 
-                    {/* Mensagem PIX */}
+                    {/* Mensagem PIX com dados do recebedor */}
                     {paymentMethod === "pix" && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
-                        className="bg-brand-50 border-2 border-brand-200 rounded-xl p-4"
+                        className="bg-gradient-to-br from-brand-50 to-green-50 border-2 border-brand-200 rounded-xl p-4 space-y-4"
                       >
+                        {/* Informação principal */}
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0">
                             <Zap className="w-5 h-5 text-white" />
@@ -1482,6 +1484,33 @@ export default function CheckoutPage() {
                               Após clicar em finalizar, você receberá o QR Code para pagamento instantâneo.
                             </p>
                           </div>
+                        </div>
+
+                        {/* Dados do recebedor - Credibilidade */}
+                        <div className="bg-white/80 rounded-lg p-3 border border-brand-100">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                            Você pagará para
+                          </p>
+                          <p className="font-bold text-gray-900 text-sm mb-3">
+                            Hdm Consultoria Imobiliaria E Seguros Ltda
+                          </p>
+                          
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <p className="text-gray-500">CNPJ</p>
+                              <p className="font-medium text-gray-800">50.216.907/0001-60</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Instituição</p>
+                              <p className="font-medium text-gray-800">Mercado Pago</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Selo de segurança */}
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <ShieldCheck className="w-4 h-4 text-green-600" />
+                          <span>Transação processada com segurança pelo Mercado Pago</span>
                         </div>
                       </motion.div>
                     )}
