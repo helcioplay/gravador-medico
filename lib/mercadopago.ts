@@ -12,6 +12,7 @@ export interface MercadoPagoPaymentData {
   }
   amount: number
   payment_method: 'pix' | 'credit_card'
+  ip_address?: string
   card_data?: {
     number: string
     holder_name: string
@@ -91,6 +92,20 @@ async function processPixPayment(
           number: data.customer.cpf.replace(/\D/g, '')
         }
       },
+      additional_info: {
+        items: [
+          {
+            id: 'metodo-gravador-medico-v1',
+            title: 'Método Gravador Médico',
+            description: 'Acesso ao método de transcrição de consultas com IA',
+            picture_url: 'https://gravadormedico.com.br/logo.png',
+            category_id: 'learnings',
+            quantity: 1,
+            unit_price: Number(data.amount)
+          }
+        ],
+        ip_address: data.ip_address || '127.0.0.1'
+      },
       notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
       statement_descriptor: 'GRAVADOR MEDICO',
       external_reference: `MP-${Date.now()}`
@@ -167,6 +182,20 @@ async function processCreditCardPayment(
           type: 'CPF',
           number: data.customer.cpf.replace(/\D/g, '')
         }
+      },
+      additional_info: {
+        items: [
+          {
+            id: 'metodo-gravador-medico-v1',
+            title: 'Método Gravador Médico',
+            description: 'Acesso ao método de transcrição de consultas com IA',
+            picture_url: 'https://gravadormedico.com.br/logo.png',
+            category_id: 'learnings',
+            quantity: 1,
+            unit_price: Number(data.amount)
+          }
+        ],
+        ip_address: data.ip_address || '127.0.0.1'
       },
       notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
       statement_descriptor: 'GRAVADOR MEDICO',

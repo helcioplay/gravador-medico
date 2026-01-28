@@ -213,6 +213,18 @@ export async function POST(request: NextRequest) {
         notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`,
         statement_descriptor: 'GRAVADOR MEDICO',
         additional_info: {
+          items: [
+            {
+              id: 'metodo-gravador-medico-v1',
+              title: 'Método Gravador Médico',
+              description: 'Acesso ao método de transcrição de consultas com IA',
+              picture_url: 'https://gravadormedico.com.br/logo.png',
+              category_id: 'learnings',
+              quantity: 1,
+              unit_price: Number(amount)
+            }
+          ],
+          ip_address: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || '127.0.0.1',
           payer: {
             first_name: customer.name?.split(' ')[0] || '',
             last_name: customer.name?.split(' ').slice(1).join(' ') || '',
@@ -492,6 +504,20 @@ export async function POST(request: NextRequest) {
                 type: customer.documentType || 'CPF', // CPF ou CNPJ
                 number: customer.cpf.replace(/\D/g, '')
               }
+            },
+            additional_info: {
+              items: [
+                {
+                  id: 'metodo-gravador-medico-v1',
+                  title: 'Método Gravador Médico',
+                  description: 'Acesso ao método de transcrição de consultas com IA',
+                  picture_url: 'https://gravadormedico.com.br/logo.png',
+                  category_id: 'learnings',
+                  quantity: 1,
+                  unit_price: Number(amount)
+                }
+              ],
+              ip_address: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || '127.0.0.1'
             },
             notification_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago-enterprise`
           })

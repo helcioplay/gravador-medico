@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth-server'
+import { ALL_PRODUCTS } from '@/lib/products-config'
 
 // Tipagem do item que vem da Appmax dentro do JSONB
 interface AppmaxItem {
@@ -34,12 +35,10 @@ interface Product {
 }
 
 /**
- * POST: Auto-Discovery de Produtos
+ * POST: Sincronizar Produtos do Config
  * 
- * Varre a tabela sales_items, extrai produtos únicos
- * e popula a tabela `products` automaticamente (Upsert).
- * 
- * Evita cadastro manual e garante que todos os produtos vendidos estejam catalogados.
+ * Pega os produtos do products-config.ts (fonte única de verdade)
+ * e insere/atualiza na tabela products do Supabase
  */
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request)
@@ -48,32 +47,87 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const supabase = supabaseAdmin
+    console.log('🔄 Iniciando sincronização de produtos...')
 
-    // 1️⃣ Executar a função SQL de auto-discovery
-    // Esta função varre sales_items e faz o upsert automaticamente
-    const { data, error } = await supabase.rpc('discover_products_from_sales')
+    const results = []
 
-    if (error) {
-      console.error('❌ Erro ao descobrir produtos:', error)
-      return NextResponse.json(
-        { 
-          error: 'Falha ao sincronizar produtos',
-          details: error.message 
-        },
-        { status: 500 }
-      )
+    for (const product of ALL_PRODUCTS) {
+      console.log(`📦 Sincronizando: ${product.name}`)
+
+      // Verificar se produto já existe
+      const { data: existing } = await supabaseAdmin
+        .from('products')
+        .select('id')
+        .eq('external_id', product.appmax_product_id)
+        .single()
+
+      const productData = {
+        external_id: product.appmax_product_id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image_url: product.image_url || `https://gravadormedico.com.br/images/${product.sku}.png`,
+        category: product.category,
+        plan_type: product.type === 'main' ? 'lifetime' : product.type,
+        is_active: product.is_active,
+        is_featured: product.is_featured,
+        checkout_url: product.appmax_checkout_url || null,
+        updated_at: new Date().toISOString()
+      }
+
+      if (existing) {
+        // Atualizar produto existente
+        const { error } = await supabaseAdmin
+          .from('products')
+          .update(productData)
+          .eq('id', existing.id)
+
+        if (error) {
+          console.error(`❌ Erro ao atualizar ${product.name}:`, error)
+          results.push({ product: product.name, status: 'error', error: error.message })
+        } else {
+          console.log(`✅ Atualizado: ${product.name}`)
+          results.push({ product: product.name, status: 'updated' })
+        }
+      } else {
+        // Inserir novo produto
+        const { error } = await supabaseAdmin
+          .from('products')
+          .insert({
+            ...productData,
+            created_at: new Date().toISOString()
+          })
+
+        if (error) {
+          console.error(`❌ Erro ao inserir ${product.name}:`, error)
+          results.push({ product: product.name, status: 'error', error: error.message })
+        } else {
+          console.log(`✅ Criado: ${product.name}`)
+          results.push({ product: product.name, status: 'created' })
+        }
+      }
     }
 
-    // 2️⃣ Retornar resultado
-    const result = Array.isArray(data) && data.length > 0 ? data[0] : { discovered_count: 0, products_created: [] }
+    // Buscar produtos sincronizados
+    const { data: syncedProducts } = await supabaseAdmin
+      .from('products')
+      .select('*')
+      .order('is_featured', { ascending: false })
+      .order('price', { ascending: false })
+
+    console.log('✅ Sincronização concluída!')
 
     return NextResponse.json({
       success: true,
-      message: `${result.discovered_count} produtos sincronizados com sucesso`,
-      discovered_count: result.discovered_count,
-      products: result.products_created,
-      synced_at: new Date().toISOString()
+      message: 'Produtos sincronizados com sucesso',
+      results,
+      products: syncedProducts,
+      summary: {
+        total: results.length,
+        created: results.filter(r => r.status === 'created').length,
+        updated: results.filter(r => r.status === 'updated').length,
+        errors: results.filter(r => r.status === 'error').length
+      }
     })
 
   } catch (error: any) {

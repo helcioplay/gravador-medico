@@ -10,6 +10,7 @@ export interface CascataPaymentData {
   }
   amount: number
   payment_method: 'pix' | 'credit_card'
+  ip_address?: string
   card_data?: {
     number: string
     holder_name: string
@@ -56,6 +57,7 @@ export async function processPaymentWithFallback(
       customer: data.customer,
       amount: data.amount,
       payment_method: data.payment_method,
+      ip_address: data.ip_address,
       card_data: data.card_data
     })
 
