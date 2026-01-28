@@ -147,7 +147,11 @@ export default function AdminDashboard() {
 
   const periodLabel = filterType === 'custom'
     ? `${formatDateLabel(startDate)} até ${formatDateLabel(endDate)}`
-    : `últimos ${quickDays} dias`
+    : quickDays === 0 
+      ? 'hoje'
+      : quickDays === 1 
+        ? 'ontem'
+        : `últimos ${quickDays} dias`
 
   const exportDashboard = () => {
     if (!metrics) return
@@ -252,6 +256,34 @@ Relatório gerado automaticamente pelo Gravador Médico
           <div className="flex-1">
             <label className="block text-sm font-semibold text-gray-400 mb-2">Período Rápido</label>
             <div className="flex gap-2 flex-wrap">
+              {/* Hoje e Ontem */}
+              <button
+                onClick={() => {
+                  setFilterType('quick')
+                  setQuickDays(0) // 0 = hoje
+                }}
+                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+                  filterType === 'quick' && quickDays === 0
+                    ? 'bg-green-500 text-white shadow-lg'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Hoje
+              </button>
+              <button
+                onClick={() => {
+                  setFilterType('quick')
+                  setQuickDays(1) // 1 = ontem
+                }}
+                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+                  filterType === 'quick' && quickDays === 1
+                    ? 'bg-blue-500 text-white shadow-lg'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Ontem
+              </button>
+              {/* Períodos em dias */}
               {[7, 15, 30, 60, 90].map((days) => (
                 <button
                   key={days}

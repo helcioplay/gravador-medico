@@ -33,6 +33,33 @@ type RangeOptions = {
 
 function resolveIsoRange(options?: RangeOptions) {
   const now = new Date()
+  
+  // Se days === 0 (hoje) ou days === 1 (ontem), tratar de forma especial
+  if (options?.days === 0) {
+    // Hoje: do início do dia até agora
+    const todayStart = new Date(now)
+    todayStart.setHours(0, 0, 0, 0)
+    return {
+      startIso: todayStart.toISOString(),
+      endIso: now.toISOString(),
+      durationMs: now.getTime() - todayStart.getTime()
+    }
+  }
+  
+  if (options?.days === 1) {
+    // Ontem: do início de ontem até o fim de ontem
+    const yesterdayStart = new Date(now)
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1)
+    yesterdayStart.setHours(0, 0, 0, 0)
+    const yesterdayEnd = new Date(yesterdayStart)
+    yesterdayEnd.setHours(23, 59, 59, 999)
+    return {
+      startIso: yesterdayStart.toISOString(),
+      endIso: yesterdayEnd.toISOString(),
+      durationMs: yesterdayEnd.getTime() - yesterdayStart.getTime()
+    }
+  }
+  
   const endDate = options?.end ? new Date(options.end) : now
   const days = options?.days && options.days > 0 ? options.days : 30
   const startDate = options?.start

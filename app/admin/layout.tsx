@@ -139,6 +139,62 @@ const catalogItems = [
   },
 ]
 
+// Menu de Meta Ads (Estilo VIGA)
+const metaAdsItems = [
+  { 
+    icon: LayoutDashboard, 
+    label: 'Visão Geral', 
+    href: '/admin/ads',
+    badge: null
+  },
+  { 
+    icon: Megaphone, 
+    label: 'Campanhas', 
+    href: '/admin/ads/campanhas',
+    badge: null
+  },
+  { 
+    icon: Package, 
+    label: 'Criativos', 
+    href: '/admin/ads/criativos',
+    badge: null
+  },
+  { 
+    icon: Activity, 
+    label: 'Engajamento', 
+    href: '/admin/ads/engajamento',
+    badge: null
+  },
+  { 
+    icon: TrendingUp, 
+    label: 'Histórico', 
+    href: '/admin/ads/historico',
+    badge: null
+  },
+]
+
+// Menu Demográfico (sub-submenu de Meta Ads)
+const demograficoItems = [
+  { 
+    icon: Users, 
+    label: 'Gênero', 
+    href: '/admin/ads/demografico/genero',
+    badge: null
+  },
+  { 
+    icon: Clock, 
+    label: 'Idade', 
+    href: '/admin/ads/demografico/idade',
+    badge: null
+  },
+  { 
+    icon: BarChart3, 
+    label: 'Plataforma', 
+    href: '/admin/ads/demografico/plataforma',
+    badge: null
+  },
+]
+
 // Menu de Produção (Vendas, Pagamentos, Relatórios)
 const producaoItems = [
   { 
@@ -201,16 +257,17 @@ const menuItems = [
     highlight: true
   },
   
-  // � ANÚNCIOS (Meta Ads)
+  // 📢 META ADS (Submenu expandível estilo VIGA)
   { 
-    icon: Megaphone, 
-    label: 'Anúncios', 
-    href: '/admin/ads',
+    label: 'Meta Ads', 
+    icon: Megaphone,
+    items: metaAdsItems,
     badge: 'Meta',
-    highlight: true
+    highlight: true,
+    subItems: demograficoItems  // Sub-submenu demográfico
   },
   
-  // �💰 PRODUÇÃO (Vendas, Pagamentos, Relatórios)
+  // 💰 PRODUÇÃO (Vendas, Pagamentos, Relatórios)
   { 
     label: 'Produção', 
     icon: ShoppingBag,
