@@ -55,6 +55,12 @@ const automationItems = [
     badge: null
   },
   { 
+    icon: Mail, 
+    label: 'Gestão de E-mails', 
+    href: '/admin/emails',
+    badge: null
+  },
+  { 
     icon: MessageSquare, 
     label: 'WhatsApp', 
     href: '/admin/whatsapp',

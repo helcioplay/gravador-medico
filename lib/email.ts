@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { WelcomeEmail } from '@/emails/WelcomeEmail'
+import { supabaseAdmin } from './supabase'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -18,6 +19,7 @@ export interface SendWelcomeEmailParams {
  */
 export async function sendWelcomeEmail(params: SendWelcomeEmailParams) {
   try {
+    // Primeiro, enviar o e-mail
     const { data, error } = await resend.emails.send({
       from: 'Gravador Médico <noreply@gravadormedico.com.br>',
       to: params.to,
@@ -29,13 +31,56 @@ export async function sendWelcomeEmail(params: SendWelcomeEmailParams) {
         orderId: params.orderId,
         orderValue: params.orderValue,
         paymentMethod: params.paymentMethod,
-      }),
+      }) as any,
     })
 
     if (error) {
       console.error('❌ Erro ao enviar email:', error)
+      
+      // Salvar log de erro
+      await supabaseAdmin.from('email_logs').insert({
+        recipient_email: params.to,
+        recipient_name: params.customerName,
+        subject: '🎉 Bem-vindo ao Gravador Médico - Seus Dados de Acesso',
+        email_type: 'welcome',
+        from_email: 'noreply@gravadormedico.com.br',
+        from_name: 'Gravador Médico',
+        order_id: params.orderId,
+        status: 'failed',
+        error_message: error.message,
+        metadata: {
+          user_email: params.userEmail,
+          order_value: params.orderValue,
+          payment_method: params.paymentMethod,
+        },
+      });
+      
       throw error
     }
+
+    // Salvar log de sucesso no banco (com tracking ativado)
+    const trackingPixelUrl = data?.id 
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/api/track/email/${data.id}/open`
+      : null;
+
+    await supabaseAdmin.from('email_logs').insert({
+      email_id: data?.id,
+      recipient_email: params.to,
+      recipient_name: params.customerName,
+      subject: '🎉 Bem-vindo ao Gravador Médico - Seus Dados de Acesso',
+      email_type: 'welcome',
+      from_email: 'noreply@gravadormedico.com.br',
+      from_name: 'Gravador Médico',
+      order_id: params.orderId,
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      metadata: {
+        user_email: params.userEmail,
+        order_value: params.orderValue,
+        payment_method: params.paymentMethod,
+        tracking_pixel_url: trackingPixelUrl,
+      },
+    });
 
     console.log('✅ Email enviado com sucesso:', data?.id)
     return { success: true, emailId: data?.id }
