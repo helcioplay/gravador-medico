@@ -854,236 +854,226 @@ export default function AdsPage() {
         </div>
       </motion.div>
 
-      {/* ROI Cards em Destaque */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.05 }}
-          className={`relative overflow-hidden rounded-2xl p-6 ${
-            roiToday >= 0 
-              ? 'bg-gradient-to-br from-green-600/30 to-emerald-700/30 border-2 border-green-500/40' 
-              : 'bg-gradient-to-br from-red-600/30 to-rose-700/30 border-2 border-red-500/40'
-          }`}
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className={`p-2 rounded-xl ${roiToday >= 0 ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
-                  <TrendingUp className={`h-5 w-5 ${roiToday >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                </div>
-                <span className={`text-lg font-semibold ${roiToday >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-                  ROI do Dia
-                </span>
-              </div>
-              <span className="text-xs text-gray-400">Hoje</span>
-            </div>
-            <div className={`text-4xl font-bold ${roiToday >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {loading ? <Skeleton className="h-10 w-32 bg-white/10" /> : `${roiToday >= 0 ? '+' : ''}${roiToday.toFixed(1)}%`}
-            </div>
-            <div className="flex items-center gap-4 mt-3 text-sm">
-              <span className="text-gray-400">
-                Investido: <span className="text-white font-medium">{formatCurrency(spendToday)}</span>
-              </span>
-              <span className="text-gray-400">
-                Receita: <span className={`font-medium ${salesToday?.approvedValue ? 'text-green-400' : 'text-gray-500'}`}>
-                  {formatCurrency(salesToday?.approvedValue || 0)}
-                </span>
-              </span>
-            </div>
+      {/* ═══════════════════════════════════════════════════════════════════════════ */}
+      {/* SEÇÃO 1: TEMPO REAL (HOJE) - Sempre mostra dados do dia atual */}
+      {/* ═══════════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-4"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+            <Zap className="h-5 w-5 text-amber-400" />
+            <span className="text-lg font-bold text-amber-300">Tempo Real</span>
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/30 text-xs font-medium text-amber-200">HOJE</span>
           </div>
-        </motion.div>
+          <span className="text-sm text-gray-500">
+            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className={`relative overflow-hidden rounded-2xl p-6 ${
-            realROI >= 0 
-              ? 'bg-gradient-to-br from-blue-600/30 to-indigo-700/30 border-2 border-blue-500/40' 
-              : 'bg-gradient-to-br from-orange-600/30 to-red-700/30 border-2 border-orange-500/40'
-          }`}
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className={`p-2 rounded-xl ${realROI >= 0 ? 'bg-blue-500/30' : 'bg-orange-500/30'}`}>
-                  <BarChart3 className={`h-5 w-5 ${realROI >= 0 ? 'text-blue-400' : 'text-orange-400'}`} />
-                </div>
-                <span className={`text-lg font-semibold ${realROI >= 0 ? 'text-blue-300' : 'text-orange-300'}`}>
-                  ROI do Período
-                </span>
+        {/* Cards de Hoje */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {/* ROI do Dia */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.05 }}
+            className={`col-span-2 md:col-span-1 relative overflow-hidden rounded-2xl p-5 ${
+              roiToday >= 0 
+                ? 'bg-gradient-to-br from-green-600/30 to-emerald-700/30 border-2 border-green-500/40' 
+                : 'bg-gradient-to-br from-red-600/30 to-rose-700/30 border-2 border-red-500/40'
+            }`}
+          >
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className={`h-4 w-4 ${roiToday >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+                <span className={`text-sm font-medium ${roiToday >= 0 ? 'text-green-300' : 'text-red-300'}`}>ROI Hoje</span>
               </div>
-              <span className="text-xs text-gray-400">{periodOptions.find(p => p.value === selectedPeriod)?.label}</span>
+              <div className={`text-3xl font-bold ${roiToday >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {loading ? <Skeleton className="h-8 w-24 bg-white/10" /> : `${roiToday >= 0 ? '+' : ''}${roiToday.toFixed(1)}%`}
+              </div>
             </div>
-            <div className={`text-4xl font-bold ${realROI >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
-              {loading ? <Skeleton className="h-10 w-32 bg-white/10" /> : `${realROI >= 0 ? '+' : ''}${realROI.toFixed(1)}%`}
-            </div>
-            <div className="flex items-center gap-4 mt-3 text-sm">
-              <span className="text-gray-400">
-                Investido: <span className="text-white font-medium">{formatCurrency(displayMetrics?.totalSpend || 0)}</span>
-              </span>
-              <span className="text-gray-400">
-                Receita: <span className={`font-medium ${realSales?.approvedValue ? 'text-green-400' : 'text-gray-500'}`}>
-                  {formatCurrency(realSales?.approvedValue || 0)}
-                </span>
-              </span>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
 
-      {/* Big Numbers - Gastos do Dia e Mês */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="col-span-1 bg-gradient-to-br from-orange-500/20 to-red-600/20 backdrop-blur-xl rounded-2xl border border-orange-500/30 p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-orange-300">Gasto Hoje</span>
-            <div className="p-2 rounded-xl bg-orange-500/20">
+          {/* Gasto Hoje */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="col-span-1 bg-gradient-to-br from-orange-500/20 to-red-600/20 backdrop-blur-xl rounded-2xl border border-orange-500/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
               <DollarSign className="h-4 w-4 text-orange-400" />
+              <span className="text-sm font-medium text-orange-300">Investido</span>
             </div>
-          </div>
-          <div className="text-3xl font-bold text-white">
-            {loading ? <Skeleton className="h-8 w-28 bg-white/10" /> : formatCurrency(spendToday)}
-          </div>
-          <p className="text-xs text-orange-300/60 mt-1">Investimento do dia atual</p>
-        </motion.div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-24 bg-white/10" /> : formatCurrency(spendToday)}
+            </div>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="col-span-1 bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur-xl rounded-2xl border border-purple-500/30 p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-purple-300">Gasto do Mês</span>
-            <div className="p-2 rounded-xl bg-purple-500/20">
+          {/* Receita Hoje */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="col-span-1 bg-gradient-to-br from-emerald-500/20 to-green-600/20 backdrop-blur-xl rounded-2xl border border-emerald-500/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="h-4 w-4 text-emerald-400" />
+              <span className="text-sm font-medium text-emerald-300">Receita</span>
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-24 bg-white/10" /> : formatCurrency(salesToday?.approvedValue || 0)}
+            </div>
+          </motion.div>
+
+          {/* Vendas Hoje */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="col-span-1 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 backdrop-blur-xl rounded-2xl border border-blue-500/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <ShoppingCart className="h-4 w-4 text-blue-400" />
+              <span className="text-sm font-medium text-blue-300">Vendas</span>
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-12 bg-white/10" /> : salesToday?.approvedSales || 0}
+            </div>
+          </motion.div>
+
+          {/* Gasto do Mês */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="col-span-1 bg-gradient-to-br from-purple-500/20 to-pink-600/20 backdrop-blur-xl rounded-2xl border border-purple-500/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="h-4 w-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-300">Mês</span>
             </div>
-          </div>
-          <div className="text-3xl font-bold text-white">
-            {loading ? <Skeleton className="h-8 w-28 bg-white/10" /> : formatCurrency(spendMonth)}
-          </div>
-          <p className="text-xs text-purple-300/60 mt-1">Investimento em {new Date().toLocaleDateString('pt-BR', { month: 'long' })}</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="col-span-1 bg-gradient-to-br from-emerald-500/20 to-green-600/20 backdrop-blur-xl rounded-2xl border border-emerald-500/30 p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-emerald-300">Vendas Reais (Hoje)</span>
-            <div className="p-2 rounded-xl bg-emerald-500/20">
-              <ShoppingCart className="h-4 w-4 text-emerald-400" />
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-24 bg-white/10" /> : formatCurrency(spendMonth)}
             </div>
-          </div>
-          <div className="text-3xl font-bold text-white">
-            {loading ? <Skeleton className="h-8 w-16 bg-white/10" /> : salesToday?.approvedSales || 0}
-          </div>
-          <p className="text-xs text-emerald-300/60 mt-1">Vendas aprovadas hoje</p>
-        </motion.div>
+          </motion.div>
+        </div>
+      </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="col-span-1 bg-gradient-to-br from-yellow-500/20 to-amber-600/20 backdrop-blur-xl rounded-2xl border border-yellow-500/30 p-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-yellow-300">Receita Real (Hoje)</span>
-            <div className="p-2 rounded-xl bg-yellow-500/20">
-              <DollarSign className="h-4 w-4 text-yellow-400" />
+      {/* ═══════════════════════════════════════════════════════════════════════════ */}
+      {/* SEÇÃO 2: PERÍODO FILTRADO - Mostra dados do período selecionado */}
+      {/* ═══════════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mb-6"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/30">
+            <BarChart3 className="h-5 w-5 text-blue-400" />
+            <span className="text-lg font-bold text-blue-300">Período</span>
+            <span className="px-2 py-0.5 rounded-full bg-blue-500/30 text-xs font-medium text-blue-200">
+              {periodOptions.find(p => p.value === selectedPeriod)?.label?.toUpperCase()}
+            </span>
+          </div>
+        </div>
+
+        {/* ROI do Período + Métricas principais */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+          {/* ROI do Período - Card grande */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25 }}
+            className={`col-span-2 md:col-span-1 relative overflow-hidden rounded-2xl p-5 ${
+              realROI >= 0 
+                ? 'bg-gradient-to-br from-blue-600/30 to-indigo-700/30 border-2 border-blue-500/40' 
+                : 'bg-gradient-to-br from-orange-600/30 to-red-700/30 border-2 border-orange-500/40'
+            }`}
+          >
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className={`h-4 w-4 ${realROI >= 0 ? 'text-blue-400' : 'text-orange-400'}`} />
+                <span className={`text-sm font-medium ${realROI >= 0 ? 'text-blue-300' : 'text-orange-300'}`}>ROI</span>
+              </div>
+              <div className={`text-3xl font-bold ${realROI >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
+                {loading ? <Skeleton className="h-8 w-24 bg-white/10" /> : `${realROI >= 0 ? '+' : ''}${realROI.toFixed(1)}%`}
+              </div>
             </div>
-          </div>
-          <div className="text-3xl font-bold text-white">
-            {loading ? <Skeleton className="h-8 w-28 bg-white/10" /> : formatCurrency(salesToday?.approvedValue || 0)}
-          </div>
-          <p className="text-xs text-yellow-300/60 mt-1">Receita de vendas hoje</p>
-        </motion.div>
-      </div>
+          </motion.div>
 
-      {/* Métricas do Período Selecionado */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="col-span-1 bg-gradient-to-br from-gray-700/40 to-gray-800/60 backdrop-blur-xl rounded-2xl border border-gray-600/30 p-5"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-300">Compras (Pixel)</span>
-            <div className="p-2 rounded-xl bg-gray-500/20">
-              <ShoppingCart className="h-4 w-4 text-gray-400" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-white">
-            {loading ? <Skeleton className="h-7 w-16 bg-white/10" /> : displayMetrics?.totalPurchases || 0}
-          </div>
-          <p className="text-xs text-gray-400 mt-1">Dados do Facebook Pixel</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="col-span-1 bg-gradient-to-br from-gray-700/40 to-gray-800/60 backdrop-blur-xl rounded-2xl border border-gray-600/30 p-5"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-300">Receita (Pixel)</span>
-            <div className="p-2 rounded-xl bg-gray-500/20">
+          {/* Investimento do Período */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="col-span-1 bg-gradient-to-br from-gray-700/40 to-gray-800/60 backdrop-blur-xl rounded-2xl border border-gray-600/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
               <DollarSign className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-300">Investido</span>
             </div>
-          </div>
-          <div className="text-2xl font-bold text-white">
-            {loading ? <Skeleton className="h-7 w-24 bg-white/10" /> : formatCurrency(displayMetrics?.totalPurchaseValue || 0)}
-          </div>
-          <p className="text-xs text-gray-400 mt-1">Dados do Facebook Pixel</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="col-span-1 bg-gradient-to-br from-cyan-700/40 to-blue-800/60 backdrop-blur-xl rounded-2xl border border-cyan-600/30 p-5"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-cyan-300">Vendas Reais</span>
-            <div className="p-2 rounded-xl bg-cyan-500/20">
-              <ShoppingCart className="h-4 w-4 text-cyan-400" />
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-24 bg-white/10" /> : formatCurrency(displayMetrics?.totalSpend || 0)}
             </div>
-          </div>
-          <div className="text-2xl font-bold text-white">
-            {loading ? <Skeleton className="h-7 w-16 bg-white/10" /> : realSales?.approvedSales || 0}
-          </div>
-          <p className="text-xs text-cyan-400/60 mt-1">{periodOptions.find(p => p.value === selectedPeriod)?.label}</p>
-        </motion.div>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          className="col-span-1 bg-gradient-to-br from-green-700/40 to-emerald-800/60 backdrop-blur-xl rounded-2xl border border-green-600/30 p-5"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-green-300">Receita Real</span>
-            <div className="p-2 rounded-xl bg-green-500/20">
+          {/* Receita Real do Período */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="col-span-1 bg-gradient-to-br from-green-700/40 to-emerald-800/60 backdrop-blur-xl rounded-2xl border border-green-600/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
               <DollarSign className="h-4 w-4 text-green-400" />
+              <span className="text-sm font-medium text-green-300">Receita Real</span>
             </div>
-          </div>
-          <div className="text-2xl font-bold text-white">
-            {loading ? <Skeleton className="h-7 w-24 bg-white/10" /> : formatCurrency(realSales?.approvedValue || 0)}
-          </div>
-          <p className="text-xs text-green-400/60 mt-1">{periodOptions.find(p => p.value === selectedPeriod)?.label}</p>
-        </motion.div>
-      </div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-24 bg-white/10" /> : formatCurrency(realSales?.approvedValue || 0)}
+            </div>
+          </motion.div>
+
+          {/* Vendas Reais do Período */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="col-span-1 bg-gradient-to-br from-cyan-700/40 to-blue-800/60 backdrop-blur-xl rounded-2xl border border-cyan-600/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <ShoppingCart className="h-4 w-4 text-cyan-400" />
+              <span className="text-sm font-medium text-cyan-300">Vendas Reais</span>
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-12 bg-white/10" /> : realSales?.approvedSales || 0}
+            </div>
+          </motion.div>
+
+          {/* Compras Pixel */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="col-span-1 bg-gradient-to-br from-gray-700/40 to-gray-800/60 backdrop-blur-xl rounded-2xl border border-gray-600/30 p-5"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Facebook className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-300">Pixel</span>
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? <Skeleton className="h-7 w-12 bg-white/10" /> : displayMetrics?.totalPurchases || 0}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">compras</p>
+          </motion.div>
+        </div>
+      </motion.div>
 
       {/* KPIs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
