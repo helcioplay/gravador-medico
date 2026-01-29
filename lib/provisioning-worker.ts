@@ -183,28 +183,83 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
         })
 
         // =====================================================
-        // 5️⃣ ENVIAR EMAIL COM CREDENCIAIS
+        // 5️⃣ ENVIAR EMAIL COM CREDENCIAIS (COM PROTEÇÃO DE IDEMPOTÊNCIA)
         // =====================================================
         
-        console.log('📧 Enviando email de boas-vindas...')
+        console.log('📧 Verificando se email já foi enviado anteriormente...')
         
-        const { sendWelcomeEmail } = await import('./email')
-        
-        await sendWelcomeEmail({
-          to: order.customer_email,
-          customerName: order.customer_name,
-          userEmail: order.customer_email,
-          userPassword: password,
-          orderId: order.id.toString(),
-          orderValue: Number(order.total_amount ?? order.amount ?? 0),
-          paymentMethod: order.payment_gateway === 'mercadopago'
-            ? 'Mercado Pago'
-            : order.payment_gateway === 'appmax'
-              ? 'AppMax'
-              : (order.payment_gateway || order.payment_method || 'checkout')
-        })
-        
-        console.log('✅ Email enviado com sucesso!')
+        // ✅ IDEMPOTÊNCIA: Verificar se já existe email enviado com sucesso
+        const { data: existingEmailLog, error: logCheckError } = await supabaseAdmin
+          .from('integration_logs')
+          .select('id, created_at')
+          .eq('order_id', order.id)
+          .eq('action', 'send_email')
+          .eq('status', 'success')
+          .maybeSingle()
+
+        if (logCheckError) {
+          console.warn('⚠️ Erro ao verificar logs de email:', logCheckError)
+        }
+
+        if (existingEmailLog) {
+          console.log(`✅ Email já foi enviado anteriormente em ${existingEmailLog.created_at}`)
+          console.log('⏭️ Pulando envio de email (evitando duplicata)')
+          
+          // Log de skip (para auditoria)
+          await supabaseAdmin.from('integration_logs').insert({
+            order_id: order.id,
+            action: 'send_email',
+            status: 'skipped',
+            recipient_email: order.customer_email,
+            details: {
+              reason: 'email_already_sent',
+              previous_email_sent_at: existingEmailLog.created_at,
+              skipped_at: new Date().toISOString()
+            },
+            duration_ms: 0
+          })
+        } else {
+          // Email ainda não foi enviado, proceder com envio
+          console.log('📧 Enviando email de boas-vindas...')
+          
+          const { sendWelcomeEmail } = await import('./email')
+          
+          const emailResult = await sendWelcomeEmail({
+            to: order.customer_email,
+            customerName: order.customer_name,
+            userEmail: order.customer_email,
+            userPassword: password,
+            orderId: order.id.toString(),
+            orderValue: Number(order.total_amount ?? order.amount ?? 0),
+            paymentMethod: order.payment_gateway === 'mercadopago'
+              ? 'Mercado Pago'
+              : order.payment_gateway === 'appmax'
+                ? 'AppMax'
+                : (order.payment_gateway || order.payment_method || 'checkout')
+          })
+          
+          // Log imediato do resultado do email
+          await supabaseAdmin.from('integration_logs').insert({
+            order_id: order.id,
+            action: 'send_email',
+            status: emailResult.success ? 'success' : 'error',
+            recipient_email: order.customer_email,
+            error_message: emailResult.error || null,
+            details: {
+              email_id: emailResult.emailId,
+              password_sent: !!password,
+              sent_at: new Date().toISOString()
+            },
+            duration_ms: Date.now() - itemStartTime
+          })
+          
+          if (emailResult.success) {
+            console.log('✅ Email enviado com sucesso!')
+          } else {
+            console.error('❌ Falha ao enviar email:', emailResult.error)
+            throw new Error(`Falha ao enviar email: ${emailResult.error}`)
+          }
+        }
 
         // =====================================================
         // 6️⃣ FINALIZAR: provisioning → active
