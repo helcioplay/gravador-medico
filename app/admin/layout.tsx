@@ -240,21 +240,57 @@ const gestaoItems = [
 ]
 
 const menuItems = [
-  // 📊 VISÃO GERAL
-  { 
-    icon: LayoutDashboard, 
-    label: 'Visão Geral', 
-    href: '/admin/dashboard',
-    badge: null
-  },
-  
-  // 📈 ANALYTICS (Separado com destaque)
+  //  ANALYTICS (Separado com destaque)
   { 
     icon: BarChart3, 
     label: 'Analytics', 
     href: '/admin/analytics',
     badge: 'GA4',
     highlight: true
+  },
+  
+  // � AUTOMAÇÃO
+  { 
+    label: 'Automação', 
+    icon: Sparkles,
+    items: automationItems
+  },
+  
+  // 🛍️ CATÁLOGO (Produtos + Cupons)
+  { 
+    label: 'Catálogo', 
+    icon: Package,
+    items: catalogItems
+  },
+  
+  // 💬 CHAT INTERNO
+  { 
+    icon: MessageCircle, 
+    label: 'Chat Interno', 
+    href: '/admin/chat',
+    badge: null
+  },
+  
+  // ⚙️ CONFIGURAÇÕES
+  { 
+    icon: Settings, 
+    label: 'Configurações', 
+    href: '/admin/settings',
+    badge: null
+  },
+  
+  // 👥 GESTÃO (CRM, Clientes)
+  { 
+    label: 'Gestão', 
+    icon: Users,
+    items: gestaoItems
+  },
+  
+  // � LOVABLE
+  { 
+    label: 'Lovable', 
+    icon: Heart,
+    items: lovableItems
   },
   
   // 📢 META ADS (Submenu expandível estilo VIGA)
@@ -274,66 +310,36 @@ const menuItems = [
     items: producaoItems
   },
   
-  // 👥 GESTÃO (CRM, Clientes)
-  { 
-    label: 'Gestão', 
-    icon: Users,
-    items: gestaoItems
-  },
-  
-  // 🛍️ CATÁLOGO (Produtos + Cupons)
-  { 
-    label: 'Catálogo', 
-    icon: Package,
-    items: catalogItems
-  },
-  
-  // � WHATSAPP (Acesso rápido)
-  { 
-    icon: MessageSquare, 
-    label: 'WhatsApp', 
-    href: '/admin/whatsapp',
-    badge: null,
-    highlight: true
-  },
-  
-  // �🔧 FERRAMENTAS
+  // 🔗 TRACKING
   { 
     label: 'Tracking', 
     icon: MousePointerClick,
     items: trackingItems
   },
-  { 
-    label: 'Automação', 
-    icon: Sparkles,
-    items: automationItems
-  },
-  { 
-    label: 'Lovable', 
-    icon: Heart,
-    items: lovableItems
-  },
   
-  // 💬 COMUNICAÇÃO
+  // � VISÃO GERAL
   { 
-    icon: MessageCircle, 
-    label: 'Chat Interno', 
-    href: '/admin/chat',
+    icon: LayoutDashboard, 
+    label: 'Visão Geral', 
+    href: '/admin/dashboard',
     badge: null
   },
   
-  // ⚙️ CONFIGURAÇÕES
+  // 🔔 WEBHOOKS
   { 
     icon: Bell, 
     label: 'Webhooks', 
     href: '/admin/webhooks',
     badge: null
   },
+  
+  // 💬 WHATSAPP (Acesso rápido)
   { 
-    icon: Settings, 
-    label: 'Configurações', 
-    href: '/admin/settings',
-    badge: null
+    icon: MessageSquare, 
+    label: 'WhatsApp', 
+    href: '/admin/whatsapp',
+    badge: null,
+    highlight: true
   },
 ]
 
