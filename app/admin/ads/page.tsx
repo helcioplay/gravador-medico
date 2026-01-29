@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  DollarSign, MousePointerClick, Eye, Users, TrendingUp, AlertCircle, 
+  DollarSign, MousePointerClick, Eye, Users, TrendingUp, TrendingDown, AlertCircle, 
   RefreshCw, Megaphone, Target, BarChart3, Zap, Filter, ArrowUpDown,
   PlayCircle, ExternalLink, ShoppingCart, Facebook, Layers, Image, Info
 } from 'lucide-react';
@@ -1056,22 +1056,44 @@ export default function AdsPage() {
             </div>
           </motion.div>
 
-          {/* Compras Pixel */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="col-span-1 bg-gradient-to-br from-gray-700/40 to-gray-800/60 backdrop-blur-xl rounded-2xl border border-gray-600/30 p-5"
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <Facebook className="h-4 w-4 text-gray-400" />
-              <span className="text-sm font-medium text-gray-300">Pixel</span>
-            </div>
-            <div className="text-2xl font-bold text-white">
-              {loading ? <Skeleton className="h-7 w-12 bg-white/10" /> : displayMetrics?.totalPurchases || 0}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">compras</p>
-          </motion.div>
+          {/* Lucro Líquido (Receita - Investimento) */}
+          {(() => {
+            const lucro = (realSales?.approvedValue || 0) - (displayMetrics?.totalSpend || 0);
+            const isPositive = lucro >= 0;
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className={`col-span-1 relative overflow-hidden rounded-2xl p-5 ${
+                  isPositive 
+                    ? 'bg-gradient-to-br from-emerald-600/40 to-green-700/60 border-2 border-emerald-500/50' 
+                    : 'bg-gradient-to-br from-red-600/40 to-rose-700/60 border-2 border-red-500/50'
+                }`}
+              >
+                <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    {isPositive ? (
+                      <TrendingUp className="h-4 w-4 text-emerald-400" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4 text-red-400" />
+                    )}
+                    <span className={`text-sm font-medium ${isPositive ? 'text-emerald-300' : 'text-red-300'}`}>
+                      Lucro
+                    </span>
+                  </div>
+                  <div className={`text-2xl font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {loading ? (
+                      <Skeleton className="h-7 w-24 bg-white/10" />
+                    ) : (
+                      `${isPositive ? '+' : ''}${formatCurrency(lucro)}`
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
         </div>
       </motion.div>
 
