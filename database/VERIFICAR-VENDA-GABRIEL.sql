@@ -4,6 +4,12 @@
 -- Execute no Supabase SQL Editor
 -- =============================================
 
+-- 0️⃣ VER ESTRUTURA DA TABELA INTEGRATION_LOGS
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns 
+WHERE table_name = 'integration_logs'
+ORDER BY ordinal_position;
+
 -- 1️⃣ BUSCAR VENDAS DO GABRIEL
 SELECT 
     id,
@@ -34,40 +40,13 @@ FROM provisioning_queue pq
 ORDER BY pq.created_at DESC
 LIMIT 20;
 
--- 3️⃣ VER LOGS DE INTEGRAÇÃO (criação de usuário/email)
-SELECT 
-    id,
-    order_id,
-    action,
-    status,
-    recipient_email,
-    user_id,
-    error_message,
-    created_at
-FROM integration_logs
-WHERE recipient_email ILIKE '%gabriel%'
-   OR order_id IN (
-       SELECT id::text FROM sales 
-       WHERE customer_email ILIKE '%gabriel%'
-   )
-ORDER BY created_at DESC
-LIMIT 20;
-
--- 4️⃣ VER TODOS OS LOGS RECENTES DE INTEGRAÇÃO
-SELECT 
-    id,
-    order_id,
-    action,
-    status,
-    recipient_email,
-    error_message,
-    duration_ms,
-    created_at
+-- 3️⃣ VER TODOS OS LOGS DE INTEGRAÇÃO (sem filtro por email)
+SELECT *
 FROM integration_logs
 ORDER BY created_at DESC
 LIMIT 30;
 
--- 5️⃣ VER ITENS NA FILA QUE FALHARAM
+-- 4️⃣ VER ITENS NA FILA QUE FALHARAM
 SELECT 
     pq.*,
     s.customer_email,
@@ -79,7 +58,7 @@ WHERE pq.status IN ('pending', 'failed', 'processing')
 ORDER BY pq.created_at DESC
 LIMIT 20;
 
--- 6️⃣ VERIFICAR ESTRUTURA DA PROVISIONING_QUEUE
+-- 5️⃣ VERIFICAR ESTRUTURA DA PROVISIONING_QUEUE
 SELECT column_name, data_type, is_nullable
 FROM information_schema.columns 
 WHERE table_name = 'provisioning_queue'

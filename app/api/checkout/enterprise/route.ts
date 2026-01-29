@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { createAppmaxOrder } from '@/lib/appmax'
 import { processProvisioningQueue } from '@/lib/provisioning-worker'
+import { nowBrazil } from '@/lib/timezone'
 
 /**
  * 🏢 CHECKOUT ENTERPRISE LEVEL
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest) {
         coupon_code: coupon_code || null, // ✅ NOVO: salvar código do cupom
         coupon_discount: discount || 0,   // ✅ NOVO: salvar valor do desconto
         discount: discount || 0,          // ✅ NOVO: compatibilidade
-        created_at: new Date().toISOString()
+        created_at: nowBrazil() // ✅ Horário de São Paulo
       })
       .select()
       .single()

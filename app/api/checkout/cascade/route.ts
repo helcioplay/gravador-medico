@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { supabaseAdmin } from '@/lib/supabase';
 import { CheckoutRequestSchema, sanitizeCPF } from '@/lib/validators/checkout';
 import { processProvisioningQueue } from '@/lib/provisioning-worker';
+import { nowBrazil } from '@/lib/timezone';
 
 // =====================================================
 // 🔧 CONFIGURAÇÃO DOS GATEWAYS
@@ -303,7 +304,7 @@ export async function POST(request: NextRequest) {
       raw_response: mpResult.data,
       response_time_ms: mpAttemptTime,
       started_at: new Date(mpAttemptStart).toISOString(),
-      completed_at: new Date().toISOString(),
+      completed_at: nowBrazil(),
     });
 
     if (mpResult.success) {
@@ -314,7 +315,7 @@ export async function POST(request: NextRequest) {
           status: 'paid',
           gateway_provider: 'mercadopago',
           gateway_order_id: mpResult.data.id,
-          paid_at: new Date().toISOString(),
+          paid_at: nowBrazil(),
           fallback_used: false,
         })
         .eq('id', order.id);
@@ -332,7 +333,7 @@ export async function POST(request: NextRequest) {
           payment_gateway: 'mercadopago',
           mercadopago_payment_id: String(mpResult.data.id),
           fallback_used: false,
-          created_at: new Date().toISOString(),
+          created_at: nowBrazil(),
         })
         .select()
         .single();
@@ -350,7 +351,7 @@ export async function POST(request: NextRequest) {
           .insert({
             sale_id: saleId,
             status: 'pending',
-            created_at: new Date().toISOString(),
+            created_at: nowBrazil(),
           });
 
         if (queueError) {
@@ -406,7 +407,7 @@ export async function POST(request: NextRequest) {
       raw_response: appmaxResult.data,
       response_time_ms: appmaxAttemptTime,
       started_at: new Date(appmaxAttemptStart).toISOString(),
-      completed_at: new Date().toISOString(),
+      completed_at: nowBrazil(),
     });
 
     if (appmaxResult.success) {
@@ -417,7 +418,7 @@ export async function POST(request: NextRequest) {
           status: 'paid',
           gateway_provider: 'appmax',
           gateway_order_id: appmaxResult.data.id,
-          paid_at: new Date().toISOString(),
+          paid_at: nowBrazil(),
           fallback_used: true,
         })
         .eq('id', order.id);
@@ -435,7 +436,7 @@ export async function POST(request: NextRequest) {
           payment_gateway: 'appmax',
           appmax_order_id: String(appmaxResult.data.id),
           fallback_used: true,
-          created_at: new Date().toISOString(),
+          created_at: nowBrazil(),
         })
         .select()
         .single();
@@ -453,7 +454,7 @@ export async function POST(request: NextRequest) {
           .insert({
             sale_id: saleId,
             status: 'pending',
-            created_at: new Date().toISOString(),
+            created_at: nowBrazil(),
           });
 
         if (queueError) {
