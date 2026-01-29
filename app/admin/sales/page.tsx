@@ -22,7 +22,8 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  X
+  X,
+  Trash2
 } from 'lucide-react'
 
 interface Sale {
@@ -54,6 +55,7 @@ export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
   const [filteredSales, setFilteredSales] = useState<Sale[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
@@ -285,7 +287,38 @@ export default function SalesPage() {
     console.log(`${label} copiado: ${text}`)
   }
 
-  const handleRefund = async (sale: Sale) => {
+  const handleDelete = async (saleId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta venda do dashboard?\n\nEla permanecerá no banco de dados mas não aparecerá mais na listagem.')) {
+      return
+    }
+
+    setDeleting(saleId)
+    try {
+      const response = await fetch('/api/admin/soft-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: 'sales', id: saleId })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao excluir venda')
+      }
+
+      // Remover da lista local
+      setSales(prev => prev.filter(s => s.id !== saleId))
+      setShowDrawer(false)
+      alert('Venda excluída do dashboard com sucesso!')
+    } catch (error: any) {
+      console.error('Erro ao excluir:', error)
+      alert(`Erro ao excluir venda: ${error.message}`)
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const handleRefund = async (sale: Sale) {
     const saleId = sale.sale_id || (sale.source === 'sale' ? sale.id : null)
     if (!saleId) {
       alert('Este pedido nao possui venda confirmada para estorno.')
@@ -596,6 +629,14 @@ export default function SalesPage() {
                       Estornar
                     </button>
                   )}
+                  <button 
+                    onClick={() => handleDelete(selectedSale.id)} 
+                    disabled={deleting === selectedSale.id}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    {deleting === selectedSale.id ? 'Excluindo...' : 'Excluir do Dashboard'}
+                  </button>
                 </div>
               </div>
             </motion.div>

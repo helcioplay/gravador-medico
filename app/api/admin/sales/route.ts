@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     let salesQuery = supabaseAdmin
       .from('sales')
       .select('*')
+      .is('deleted_at', null) // 🗑️ Filtrar deletados
       .order('created_at', { ascending: false })
       .limit(limit)
 
