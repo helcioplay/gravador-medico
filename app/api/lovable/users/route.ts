@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 import { 
   listLovableUsers, 
   createLovableUser, 
@@ -8,23 +9,72 @@ import {
   deleteLovableUser 
 } from '@/services/lovable-integration'
 
-// GET: Listar usuários
+/**
+ * GET: Listar clientes da tabela sales
+ * 
+ * MUDANÇA: Anteriormente buscava de lovable_users (que pode falhar)
+ * Agora busca diretamente da tabela `sales` usando supabaseAdmin
+ * para bypass de RLS e garantir retorno de dados
+ */
 export async function GET(request: NextRequest) {
   try {
-    const result = await listLovableUsers()
+    console.log('📋 [GET /api/lovable/users] Buscando clientes da tabela sales...')
     
-    if (!result.success) {
+    // Buscar clientes únicos da tabela sales (usando supabaseAdmin para bypass RLS)
+    const { data: customers, error } = await supabaseAdmin
+      .from('sales')
+      .select('customer_email, customer_name, customer_phone, order_status, created_at, total_amount')
+      .in('order_status', ['paid', 'provisioning', 'active'])
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('❌ [GET /api/lovable/users] Erro ao buscar sales:', error)
       return NextResponse.json(
-        { error: result.error },
-        { status: 400 }
+        { error: 'Erro ao buscar clientes', details: error.message },
+        { status: 500 }
       )
     }
 
-    return NextResponse.json(result)
-  } catch (error) {
-    console.error('Error listing Lovable users:', error)
+    // Agrupar por email (eliminar duplicatas)
+    const uniqueCustomers = customers?.reduce((acc, sale) => {
+      const email = sale.customer_email
+      if (!acc[email]) {
+        acc[email] = {
+          email: email,
+          name: sale.customer_name,
+          phone: sale.customer_phone,
+          status: sale.order_status,
+          created_at: sale.created_at,
+          total_spent: sale.total_amount,
+          purchase_count: 1
+        }
+      } else {
+        // Cliente já existe, somar valor e incrementar contagem
+        acc[email].total_spent += sale.total_amount
+        acc[email].purchase_count += 1
+        // Manter a data mais recente
+        if (new Date(sale.created_at) > new Date(acc[email].created_at)) {
+          acc[email].created_at = sale.created_at
+          acc[email].status = sale.order_status
+        }
+      }
+      return acc
+    }, {} as Record<string, any>)
+
+    const customerList = Object.values(uniqueCustomers || {})
+    
+    console.log(`✅ [GET /api/lovable/users] ${customerList.length} clientes encontrados`)
+
+    return NextResponse.json({
+      success: true,
+      users: customerList,
+      total: customerList.length
+    })
+    
+  } catch (error: any) {
+    console.error('❌ [GET /api/lovable/users] Erro interno:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Erro interno do servidor', details: error.message },
       { status: 500 }
     )
   }
