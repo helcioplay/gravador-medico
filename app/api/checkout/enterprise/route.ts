@@ -188,6 +188,10 @@ export async function POST(request: NextRequest) {
     // 4️⃣ TENTATIVA 1: MERCADO PAGO
     // =====================================================
 
+    // 🔥 FLAG: Só tenta AppMax se MP falhar de forma elegível
+    let shouldTryAppmax = false
+    let mpTriedAndFailed = false
+
     console.log('🔍 Verificando condições para Mercado Pago...')
     console.log(`   payment_method: ${payment_method}`)
     console.log(`   mpToken exists: ${!!mpToken}`)
@@ -415,10 +419,16 @@ export async function POST(request: NextRequest) {
         }
 
         // Erro elegível para retry AppMax
-        console.log('🔄 Erro elegível para fallback, tentando AppMax...')
+        console.log('🔄 Erro elegível para fallback, marcando para tentar AppMax...')
+        shouldTryAppmax = true
+        mpTriedAndFailed = true
         
         } catch (fetchError: any) {
           clearTimeout(timeoutId)
+          
+          // 🔥 Marcar para tentar AppMax após erro de rede
+          shouldTryAppmax = true
+          mpTriedAndFailed = true
           
           // 🔥 LOG DETALHADO DO ERRO DE REDE
           console.error('❌ ERRO DE REDE/FETCH NO MERCADO PAGO:')
@@ -495,6 +505,10 @@ export async function POST(request: NextRequest) {
           raw_response: { error: mpError.message },
           response_time_ms: Date.now() - startTime
         })
+        
+        // 🔥 Marcar para tentar AppMax após erro crítico do MP
+        shouldTryAppmax = true
+        mpTriedAndFailed = true
       }
     }
 
@@ -599,12 +613,21 @@ export async function POST(request: NextRequest) {
     // =====================================================
     // 5️⃣ TENTATIVA 2: APPMAX (FALLBACK)
     // =====================================================
+    // ⚠️ IMPORTANTE: Só tenta AppMax se:
+    //    1. MP foi tentado E falhou (shouldTryAppmax = true)
+    //    2. OU se não tinha token MP mas tem dados AppMax
+    // =====================================================
 
     console.log('🔍 Verificando condições para AppMax...')
     console.log(`   appmax_data exists: ${!!appmax_data}`)
-    console.log(`   appmax_data:`, appmax_data ? JSON.stringify(appmax_data, null, 2) : 'NULL')
+    console.log(`   shouldTryAppmax: ${shouldTryAppmax}`)
+    console.log(`   mpTriedAndFailed: ${mpTriedAndFailed}`)
 
-    if (appmax_data) {
+    // 🔥 CORREÇÃO: Só tenta AppMax se MP falhou OU se não tinha token MP
+    const shouldUseAppmax = appmax_data && (shouldTryAppmax || !mpToken)
+
+    if (shouldUseAppmax) {
+      console.log('💳 [2/2] Tentando AppMax (fallback)...')
       const appmaxStartTime = Date.now()
       
       // Preparar payload para log
@@ -628,8 +651,7 @@ export async function POST(request: NextRequest) {
       }
       
       try {
-        console.log('💳 [2/2] Tentando AppMax (fallback)...')
-        console.log('🔄 FALLBACK ACIONADO - Mercado Pago falhou ou recusou')
+        console.log(' FALLBACK ACIONADO - Mercado Pago falhou ou recusou')
         console.log('📦 Dados AppMax recebidos:', {
           has_card_data: !!appmax_data.card_data,
           payment_method: appmax_data.payment_method,
