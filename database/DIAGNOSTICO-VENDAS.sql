@@ -61,7 +61,7 @@ ORDER BY created_at;
 SELECT 
     id,
     customer_name,
-    total_amount,
+    amount,
     status,
     gateway_provider,
     created_at AS utc,
@@ -70,15 +70,21 @@ FROM public.orders
 WHERE created_at >= NOW() - INTERVAL '3 days'
 ORDER BY created_at DESC;
 
--- 6️⃣ VERIFICAR FILA DE PROVISIONING
+-- 6️⃣ VERIFICAR FILA DE PROVISIONING (com next_retry_at)
 SELECT 
     id,
     sale_id,
-    order_id,
     status,
     retry_count,
+    next_retry_at,
     last_error,
     created_at
 FROM public.provisioning_queue
 ORDER BY created_at DESC
 LIMIT 20;
+
+-- 7️⃣ FORÇAR REPROCESSAMENTO DE ITENS PENDENTES
+-- (Descomente e execute se precisar forçar)
+-- UPDATE public.provisioning_queue
+-- SET next_retry_at = NULL
+-- WHERE status IN ('pending', 'failed');

@@ -319,12 +319,36 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', order.id);
 
+      // 🔄 TAMBÉM INSERIR NA TABELA SALES (compatibilidade com dashboard)
+      const { data: sale, error: saleError } = await supabaseAdmin
+        .from('sales')
+        .insert({
+          customer_email: customer.email,
+          customer_name: customer.name,
+          customer_phone: customer.phone || '',
+          customer_cpf: sanitizeCPF(customer.cpf),
+          total_amount: product.amount,
+          order_status: 'paid',
+          payment_gateway: 'mercadopago',
+          mercadopago_payment_id: String(mpResult.data.id),
+          fallback_used: false,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (saleError) {
+        console.error(`[${order.id}] ⚠️ Erro ao criar sale:`, saleError);
+      }
+
+      const saleId = sale?.id || order.id;
+
       // 🎁 ADICIONAR NA FILA DE PROVISIONAMENTO (criar usuário + enviar email)
       try {
         const { error: queueError } = await supabaseAdmin
           .from('provisioning_queue')
           .insert({
-            order_id: order.id,
+            sale_id: saleId,
             status: 'pending',
             created_at: new Date().toISOString(),
           });
@@ -332,7 +356,7 @@ export async function POST(request: NextRequest) {
         if (queueError) {
           console.error(`[${order.id}] ⚠️ Erro ao adicionar na fila de provisionamento:`, queueError);
         } else {
-          console.log(`[${order.id}] 📬 Adicionado na fila de provisionamento`);
+          console.log(`[${order.id}] 📬 Adicionado na fila de provisionamento (sale_id: ${saleId})`);
           
           // 🚀 Processar fila imediatamente (fire-and-forget, não bloqueia a resposta)
           processProvisioningQueue()
@@ -398,12 +422,36 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', order.id);
 
+      // 🔄 TAMBÉM INSERIR NA TABELA SALES (compatibilidade com dashboard)
+      const { data: sale, error: saleError } = await supabaseAdmin
+        .from('sales')
+        .insert({
+          customer_email: customer.email,
+          customer_name: customer.name,
+          customer_phone: customer.phone || '',
+          customer_cpf: sanitizeCPF(customer.cpf),
+          total_amount: product.amount,
+          order_status: 'paid',
+          payment_gateway: 'appmax',
+          appmax_order_id: String(appmaxResult.data.id),
+          fallback_used: true,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (saleError) {
+        console.error(`[${order.id}] ⚠️ Erro ao criar sale:`, saleError);
+      }
+
+      const saleId = sale?.id || order.id;
+
       // 🎁 ADICIONAR NA FILA DE PROVISIONAMENTO (criar usuário + enviar email)
       try {
         const { error: queueError } = await supabaseAdmin
           .from('provisioning_queue')
           .insert({
-            order_id: order.id,
+            sale_id: saleId,
             status: 'pending',
             created_at: new Date().toISOString(),
           });
@@ -411,7 +459,7 @@ export async function POST(request: NextRequest) {
         if (queueError) {
           console.error(`[${order.id}] ⚠️ Erro ao adicionar na fila de provisionamento:`, queueError);
         } else {
-          console.log(`[${order.id}] 📬 Adicionado na fila de provisionamento`);
+          console.log(`[${order.id}] 📬 Adicionado na fila de provisionamento (sale_id: ${saleId})`);
           
           // 🚀 Processar fila imediatamente (fire-and-forget, não bloqueia a resposta)
           processProvisioningQueue()
