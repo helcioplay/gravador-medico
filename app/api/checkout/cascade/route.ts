@@ -10,6 +10,7 @@ import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { v4 as uuidv4 } from 'uuid';
 import { supabaseAdmin } from '@/lib/supabase';
 import { CheckoutRequestSchema, sanitizeCPF } from '@/lib/validators/checkout';
+import { processProvisioningQueue } from '@/lib/provisioning-worker';
 
 // =====================================================
 // 🔧 CONFIGURAÇÃO DOS GATEWAYS
@@ -318,6 +319,30 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', order.id);
 
+      // 🎁 ADICIONAR NA FILA DE PROVISIONAMENTO (criar usuário + enviar email)
+      try {
+        const { error: queueError } = await supabaseAdmin
+          .from('provisioning_queue')
+          .insert({
+            order_id: order.id,
+            status: 'pending',
+            created_at: new Date().toISOString(),
+          });
+
+        if (queueError) {
+          console.error(`[${order.id}] ⚠️ Erro ao adicionar na fila de provisionamento:`, queueError);
+        } else {
+          console.log(`[${order.id}] 📬 Adicionado na fila de provisionamento`);
+          
+          // 🚀 Processar fila imediatamente (fire-and-forget, não bloqueia a resposta)
+          processProvisioningQueue()
+            .then(result => console.log(`[${order.id}] 📧 Provisioning processado:`, result))
+            .catch(err => console.error(`[${order.id}] ⚠️ Erro no provisioning:`, err));
+        }
+      } catch (provisioningError) {
+        console.error(`[${order.id}] ⚠️ Exceção ao enfileirar provisionamento:`, provisioningError);
+      }
+
       console.log(`[${order.id}] ✅ Aprovado no Mercado Pago`);
 
       return NextResponse.json({
@@ -372,6 +397,30 @@ export async function POST(request: NextRequest) {
           fallback_used: true,
         })
         .eq('id', order.id);
+
+      // 🎁 ADICIONAR NA FILA DE PROVISIONAMENTO (criar usuário + enviar email)
+      try {
+        const { error: queueError } = await supabaseAdmin
+          .from('provisioning_queue')
+          .insert({
+            order_id: order.id,
+            status: 'pending',
+            created_at: new Date().toISOString(),
+          });
+
+        if (queueError) {
+          console.error(`[${order.id}] ⚠️ Erro ao adicionar na fila de provisionamento:`, queueError);
+        } else {
+          console.log(`[${order.id}] 📬 Adicionado na fila de provisionamento`);
+          
+          // 🚀 Processar fila imediatamente (fire-and-forget, não bloqueia a resposta)
+          processProvisioningQueue()
+            .then(result => console.log(`[${order.id}] 📧 Provisioning processado:`, result))
+            .catch(err => console.error(`[${order.id}] ⚠️ Erro no provisioning:`, err));
+        }
+      } catch (provisioningError) {
+        console.error(`[${order.id}] ⚠️ Exceção ao enfileirar provisionamento:`, provisioningError);
+      }
 
       console.log(`[${order.id}] ✅ Resgatado pelo AppMax`);
 

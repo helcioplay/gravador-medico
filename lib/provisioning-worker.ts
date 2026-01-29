@@ -77,16 +77,39 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
 
         console.log(`\n🔄 Processando pedido: ${saleId}`)
 
-        // Buscar dados do pedido
-        const { data: order, error: orderError } = await supabaseAdmin
+        // Buscar dados do pedido - primeiro tenta em sales, depois em orders
+        let order = null
+        let orderTable = 'sales'
+        
+        // Tentar buscar na tabela sales primeiro
+        const { data: salesOrder, error: salesError } = await supabaseAdmin
           .from('sales')
           .select('*')
           .eq('id', saleId)
-          .single()
+          .maybeSingle()
 
-        if (orderError || !order) {
-          throw new Error(`Pedido não encontrado: ${saleId}`)
+        if (salesOrder) {
+          order = salesOrder
+          orderTable = 'sales'
+        } else {
+          // Tentar buscar na tabela orders
+          const { data: ordersOrder, error: ordersError } = await supabaseAdmin
+            .from('orders')
+            .select('*')
+            .eq('id', saleId)
+            .maybeSingle()
+
+          if (ordersOrder) {
+            order = ordersOrder
+            orderTable = 'orders'
+          }
         }
+
+        if (!order) {
+          throw new Error(`Pedido não encontrado em sales nem orders: ${saleId}`)
+        }
+
+        console.log(`📋 Pedido encontrado na tabela: ${orderTable}`)
 
         const maxRetries = item.max_retries ?? 3
         if ((item.retry_count ?? 0) >= maxRetries) {
@@ -94,9 +117,10 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
           continue
         }
 
-        // Validar que pedido está pago
-        if (order.order_status !== 'paid') {
-          console.log(`⚠️ Pedido não está pago (status: ${order.order_status}), pulando...`)
+        // Validar que pedido está pago - checar ambos os campos possíveis
+        const orderStatus = order.order_status || order.status
+        if (orderStatus !== 'paid' && orderStatus !== 'approved') {
+          console.log(`⚠️ Pedido não está pago (status: ${orderStatus}), pulando...`)
           continue
         }
 
@@ -104,10 +128,18 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
         // 3️⃣ ATUALIZAR STATUS: paid → provisioning
         // =====================================================
         
-        await supabaseAdmin
-          .from('sales')
-          .update({ order_status: 'provisioning' })
-          .eq('id', order.id)
+        // Atualizar na tabela correta
+        if (orderTable === 'sales') {
+          await supabaseAdmin
+            .from('sales')
+            .update({ order_status: 'provisioning' })
+            .eq('id', order.id)
+        } else {
+          await supabaseAdmin
+            .from('orders')
+            .update({ status: 'provisioning' })
+            .eq('id', order.id)
+        }
 
         await supabaseAdmin
           .from('provisioning_queue')
@@ -195,11 +227,12 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
         result.processed++
 
       } catch (itemError: any) {
+        const catchSaleId = item.sale_id || item.order_id || 'unknown'
         console.error(`❌ Erro ao processar item ${item.id}:`, itemError)
 
         result.failed++
         result.errors.push({
-          sale_id: saleId || 'unknown',
+          sale_id: catchSaleId,
           error: itemError.message
         })
 
@@ -209,16 +242,24 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
         
         const newRetryCount = (item.retry_count || 0) + 1
         const maxRetries = item.max_retries || 3
-        const saleId = item.sale_id || item.order_id
+        const saleIdForRetry = item.sale_id || item.order_id
 
         if (newRetryCount >= maxRetries) {
           // Esgotou tentativas - marcar como falha permanente
           console.log(`❌ Esgotadas ${maxRetries} tentativas, marcando como falha permanente`)
 
-          await supabaseAdmin
+          // Tentar atualizar em sales, se não existir tenta orders
+          const { error: salesUpdateError } = await supabaseAdmin
             .from('sales')
             .update({ order_status: 'provisioning_failed' })
-            .eq('id', saleId)
+            .eq('id', saleIdForRetry)
+
+          if (salesUpdateError) {
+            await supabaseAdmin
+              .from('orders')
+              .update({ status: 'provisioning_failed' })
+              .eq('id', saleIdForRetry)
+          }
 
           await supabaseAdmin
             .from('provisioning_queue')
@@ -236,7 +277,7 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
 
           // Log de erro permanente
           await supabaseAdmin.from('integration_logs').insert({
-            order_id: saleId,
+            order_id: saleIdForRetry,
             action: 'create_user_lovable',
             status: 'error',
             recipient_email: item.order?.customer_email,
@@ -272,14 +313,21 @@ export async function processProvisioningQueue(): Promise<ProvisioningResult> {
             .eq('id', item.id)
 
           // Voltar status do pedido para paid (para tentar novamente)
-          await supabaseAdmin
+          const { error: salesRetryError } = await supabaseAdmin
             .from('sales')
             .update({ order_status: 'paid' })
-            .eq('id', saleId)
+            .eq('id', saleIdForRetry)
+
+          if (salesRetryError) {
+            await supabaseAdmin
+              .from('orders')
+              .update({ status: 'paid' })
+              .eq('id', saleIdForRetry)
+          }
 
           // Log de erro temporário
           await supabaseAdmin.from('integration_logs').insert({
-            order_id: saleId,
+            order_id: saleIdForRetry,
             action: 'create_user_lovable',
             status: 'error',
             recipient_email: item.order?.customer_email,
