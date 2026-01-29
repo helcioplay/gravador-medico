@@ -2,12 +2,8 @@ import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from './supabase'
 import { sendPurchaseEvent } from './meta-capi'
-import { 
-  createLovableUser, 
-  generateSecurePassword 
-} from '@/services/lovable-integration'
 import { createAndSaveRedirectUrl } from './redirect-helper'
-import { sendWelcomeEmail } from './email'
+import { processProvisioningQueue } from './provisioning-worker'
 
 interface AppmaxWebhookResult {
   response: NextResponse
@@ -694,121 +690,76 @@ export async function handleAppmaxWebhook(request: NextRequest, endpoint: string
     })
 
     // =====================================================
-    // 🚀 INTEGRAÇÃO LOVABLE: Criar Usuário Automaticamente
+    // 🚀 PROVISIONAMENTO: Usar Sistema de Filas Centralizado
     // =====================================================
-    if (customerEmail && customerName) {
+    if (saleId) {
       try {
-        console.log('🔧 Iniciando criação automática de usuário Lovable para:', customerEmail)
-        
-        // Gerar senha segura
-        const temporaryPassword = generateSecurePassword(12)
-        
-        // Criar usuário no Lovable
-        const lovableResult = await createLovableUser({
-          email: customerEmail,
-          password: temporaryPassword,
-          full_name: customerName
-        })
+        console.log('� Adicionando venda na fila de provisionamento (AppMax webhook)')
+        console.log('🔍 Sale ID:', saleId)
 
-        if (lovableResult.success) {
-          console.log('✅ Usuário Lovable criado com sucesso:', customerEmail)
+        // ✅ VERIFICAR IDEMPOTÊNCIA: Só inserir se ainda não estiver na fila
+        const { data: existingQueue, error: queueCheckError } = await supabaseAdmin
+          .from('provisioning_queue')
+          .select('id, status')
+          .eq('sale_id', saleId)
+          .maybeSingle()
 
-          // Registrar log de sucesso
-          await supabaseAdmin.from('integration_logs').insert({
-            action: 'create_user_auto',
-            status: 'success',
-            recipient_email: customerEmail,
-            user_id: lovableResult.user?.id,
-            details: {
-              source: 'webhook_appmax',
-              order_id: orderId,
-              full_name: customerName
-            }
-          })
-
-          // 📧 ENVIAR E-MAIL DE BOAS-VINDAS COM CREDENCIAIS
-          try {
-            console.log('📧 Enviando e-mail de boas-vindas para:', customerEmail)
-            
-            const emailResult = await sendWelcomeEmail({
-              to: customerEmail,
-              customerName: customerName,
-              userEmail: customerEmail,
-              userPassword: temporaryPassword,
-              orderId: orderId,
-              orderValue: totalAmount,
-              paymentMethod: paymentMethod || 'appmax'
-            })
-
-            // Registrar log do e-mail
-            await supabaseAdmin.from('integration_logs').insert({
-              action: 'send_email',
-              status: emailResult.success ? 'success' : 'error',
-              recipient_email: customerEmail,
-              details: {
-                email_type: 'welcome_credentials',
-                email_id: emailResult.emailId,
-                order_id: orderId,
-                sent_at: new Date().toISOString(),
-                error: emailResult.error
-              }
-            })
-            
-            if (emailResult.success) {
-              console.log('✅ E-mail enviado com sucesso:', emailResult.emailId)
-            } else {
-              console.error('❌ Falha ao enviar e-mail:', emailResult.error)
-            }
-
-          } catch (emailError: any) {
-            console.error('❌ Erro crítico ao enviar e-mail:', emailError)
-            
-            // Registrar erro do e-mail
-            await supabaseAdmin.from('integration_logs').insert({
-              action: 'send_email',
-              status: 'error',
-              recipient_email: customerEmail,
-              error_message: emailError.message,
-              details: {
-                email_type: 'welcome_credentials',
-                order_id: orderId
-              }
-            })
-          }
-
-        } else {
-          console.error('❌ Erro ao criar usuário Lovable:', lovableResult.error)
-          
-          // Registrar erro
-          await supabaseAdmin.from('integration_logs').insert({
-            action: 'create_user_auto',
-            status: 'error',
-            recipient_email: customerEmail,
-            error_message: lovableResult.error || 'Erro desconhecido',
-            details: {
-              source: 'webhook_appmax',
-              order_id: orderId,
-              full_name: customerName
-            }
-          })
+        if (queueCheckError) {
+          console.warn('⚠️ Erro ao verificar fila de provisionamento:', queueCheckError)
         }
 
-      } catch (integrationError: any) {
-        console.error('💥 Erro crítico na integração Lovable:', integrationError)
+        // Só inserir se não existir OU se estiver como 'failed' (permitir retry)
+        if (!existingQueue || existingQueue.status === 'failed') {
+          const { error: enqueueError } = await supabaseAdmin
+            .from('provisioning_queue')
+            .insert({ 
+              sale_id: saleId, 
+              status: 'pending',
+              retry_count: 0
+            })
+
+          if (enqueueError) {
+            console.error('❌ Erro ao enfileirar provisionamento:', enqueueError)
+          } else {
+            console.log('✅ Item adicionado à fila de provisionamento')
+          }
+        } else {
+          console.log('ℹ️ Item já está na fila (evitando duplicação)')
+        }
+
+        // 🚀 CRÍTICO: PROCESSAR A FILA COM AWAIT (Segura execução serverless)
+        try {
+          console.log('⚙️ Iniciando processamento da fila de provisionamento...')
+          const result = await processProvisioningQueue()
+          console.log('✅ Processamento concluído:', {
+            processed: result.processed,
+            failed: result.failed
+          })
+        } catch (provisioningError: any) {
+          // ⚠️ Mesmo se falhar, não quebra o webhook
+          // O item ficará na fila para retry futuro
+          console.error('⚠️ Erro ao processar provisionamento (item na fila para retry):', provisioningError.message)
+        }
+
+      } catch (queueError: any) {
+        console.error('💥 Erro crítico ao gerenciar fila de provisionamento:', queueError)
         
         // Registrar erro crítico
         await supabaseAdmin.from('integration_logs').insert({
-          action: 'create_user_auto',
+          action: 'queue_management',
           status: 'error',
-          recipient_email: customerEmail,
-          error_message: integrationError.message || 'Erro crítico',
+          recipient_email: customerEmail || 'unknown',
+          error_message: queueError.message || 'Erro crítico na fila',
           details: {
             source: 'webhook_appmax',
             order_id: orderId,
-            error_stack: integrationError.stack
+            sale_id: saleId,
+            error_stack: queueError.stack
           }
         })
       }
+    } else {
+      console.warn('⚠️ Sale ID não encontrado, não é possível enfileirar provisionamento')
     }
   }
 

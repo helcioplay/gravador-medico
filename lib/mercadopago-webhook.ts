@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { supabaseAdmin } from './supabase'
 import { getPaymentStatus } from './mercadopago'
+import { processProvisioningQueue } from './provisioning-worker'
 
 /**
  * 🔔 WEBHOOK MERCADO PAGO - COM RACE CONDITION FIX
@@ -121,7 +122,7 @@ export async function handleMercadoPagoWebhook(request: NextRequest) {
       
       console.log('✅ Venda atualizada com sucesso')
       
-      // 5️⃣ SE APROVADO, ENFILEIRAR PROVISIONAMENTO
+      // 5️⃣ SE APROVADO, ENFILEIRAR PROVISIONAMENTO E PROCESSAR
       if (payment.status === 'approved' && sale) {
         console.log('✅ Pagamento aprovado! Enfileirando provisionamento...')
 
@@ -132,14 +133,16 @@ export async function handleMercadoPagoWebhook(request: NextRequest) {
               .from('abandoned_carts')
               .delete()
               .eq('customer_email', sale.customer_email)
+            console.log('🗑️ Carrinho abandonado limpo com sucesso')
           } catch (error) {
             console.warn('⚠️ Erro ao limpar carrinho abandonado após compra MP:', error)
           }
         }
 
+        // ✅ VERIFICAR IDEMPOTÊNCIA: Só inserir se ainda não estiver na fila
         const { data: existingQueue, error: queueCheckError } = await supabaseAdmin
           .from('provisioning_queue')
-          .select('id')
+          .select('id, status')
           .eq('sale_id', sale.id)
           .maybeSingle()
 
@@ -147,14 +150,37 @@ export async function handleMercadoPagoWebhook(request: NextRequest) {
           console.warn('⚠️ Erro ao verificar fila de provisionamento:', queueCheckError)
         }
 
-        if (!existingQueue) {
+        // Só inserir se não existir OU se estiver como 'failed' (permitir retry)
+        if (!existingQueue || existingQueue.status === 'failed') {
           const { error: enqueueError } = await supabaseAdmin
             .from('provisioning_queue')
-            .insert({ sale_id: sale.id, status: 'pending' })
+            .insert({ 
+              sale_id: sale.id, 
+              status: 'pending',
+              retry_count: 0
+            })
 
           if (enqueueError) {
             console.error('❌ Erro ao enfileirar provisionamento:', enqueueError)
+          } else {
+            console.log('📬 Item adicionado à fila de provisionamento')
           }
+        } else {
+          console.log('ℹ️ Item já está na fila (evitando duplicação)')
+        }
+
+        // 🚀 CRÍTICO: PROCESSAR A FILA COM AWAIT (Segura execução serverless)
+        try {
+          console.log('⚙️ Iniciando processamento da fila de provisionamento...')
+          const result = await processProvisioningQueue()
+          console.log('✅ Processamento concluído:', {
+            processed: result.processed,
+            failed: result.failed
+          })
+        } catch (provisioningError: any) {
+          // ⚠️ Mesmo se falhar, não quebra o webhook
+          // O item ficará na fila para retry futuro
+          console.error('⚠️ Erro ao processar provisionamento (item na fila para retry):', provisioningError.message)
         }
       }
       
