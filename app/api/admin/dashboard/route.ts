@@ -61,34 +61,37 @@ export async function GET(request: NextRequest) {
 
     // Transformar para formato esperado pelo frontend atual
     // (manter compatibilidade com componentes existentes)
+    const salesByDay = dashboardData.financial?.salesByDay || []
+    
     const response = {
       metrics: {
-        revenue: dashboardData.financial.totalRevenue,
-        sales: dashboardData.financial.totalSales,
-        unique_visitors: dashboardData.traffic.visitors,
-        average_order_value: dashboardData.financial.avgTicket,
-        conversion_rate: dashboardData.kpis.conversionRateReal,
+        revenue: dashboardData.financial?.totalRevenue || 0,
+        sales: dashboardData.financial?.totalSales || 0,
+        unique_visitors: dashboardData.traffic?.visitors || 0,
+        average_order_value: dashboardData.financial?.avgTicket || 0,
+        conversion_rate: dashboardData.kpis?.conversionRateReal || 0,
         // Variações
-        revenue_change: dashboardData.kpis.changes.revenue,
-        sales_change: dashboardData.kpis.changes.sales,
-        visitors_change: dashboardData.kpis.changes.visitors,
+        revenue_change: dashboardData.kpis?.changes?.revenue || 0,
+        sales_change: dashboardData.kpis?.changes?.sales || 0,
+        visitors_change: dashboardData.kpis?.changes?.visitors || 0,
       },
-      chartData: dashboardData.financial.salesByDay.map((day: any) => ({
+      chartData: salesByDay.map((day: any) => ({
         date: day.date,
         amount: day.revenue || 0,
         sales: day.sales || 0,
       })),
-      funnelData: dashboardData.funnel.stages,
+      funnelData: dashboardData.funnel?.stages || [],
+      // Dados operacionais com estrutura esperada pelo componente
       operationalHealth: {
-        gateway_success_rate: 100, // TODO: implementar se necessário
-        email_delivery_rate: 100,
-        webhook_success_rate: 100,
+        recoverableCarts: { count: 0, totalValue: 0, last24h: 0 },
+        failedPayments: { count: 0, totalValue: 0, reasons: [] },
+        chargebacks: { count: 0, totalValue: 0 }
       },
       // Dados adicionais do hub
-      investment: dashboardData.investment,
-      kpis: dashboardData.kpis,
-      integrations: dashboardData.integrations,
-      errors: dashboardData.errors.length > 0 ? {
+      investment: dashboardData.investment || null,
+      kpis: dashboardData.kpis || null,
+      integrations: dashboardData.integrations || {},
+      errors: (dashboardData.errors?.length || 0) > 0 ? {
         hub: dashboardData.errors.join('; ')
       } : {}
     }
